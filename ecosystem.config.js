@@ -17,6 +17,7 @@ module.exports = {
         PG_DATABASE:'silogcootranshuilaerpdb5',
         PG_PASSWORD:'ViVooO72OyOA6cac2NNy',
         PG_PORT:15250,
+        HTTPS_PORT:3021,
         HTTPS_API:'https://apicootranshuilaerp.serviciosproductivos.com.co'
       },
     },

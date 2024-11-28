@@ -47,7 +47,7 @@ app.use('/api/vtest', v1ListingsRoutes);//Listings
 app.use('/api/vtest', v1OutputsRoutes);
 
 
-app.listen(3021, () => {
+app.listen(process.env.HTTPS_PORT, () => {
   console.log(`Worker ${process.pid} started, API listening on port 3021`);
 });
 
