@@ -41,10 +41,10 @@ app.use('/api/vtest', vTestListingsRoutes);//Listings
 app.use('/api/vtest', vTestOutputsRoutes);
 
 // Rutas de la API v1
-const v1TicketRoutes = require('./routes/v1/ticket');
-const v1AgreementRoutes = require('./routes/v1/agreement');
-app.use('/api/v1', v1TicketRoutes);
-app.use('/api/v1', v1AgreementRoutes);
+const v1ListingsRoutes = require('./routes/v1/listings');
+const v1OutputsRoutes = require('./routes/v1/outputs');
+app.use('/api/vtest', v1ListingsRoutes);//Listings
+app.use('/api/vtest', v1OutputsRoutes);
 
 
 app.listen(3021, () => {
