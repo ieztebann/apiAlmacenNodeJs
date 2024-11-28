@@ -49,7 +49,7 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
  *                   Manguera:
  *                     type: string
  *                     example: "02C"
- *               infoFacturaVentaVenta:
+ *               infoFacturaVenta:
  *                 type: object
  *                 properties:
  *                   Consecutivo:
@@ -182,6 +182,7 @@ router.post('/outputs', [
         //
         const { infoFacturaVenta } = datosEntrada;            
         const { infoFacturaVenta: { infoTercero: datosTercero } } = datosEntrada;
+        const { infoFacturaVenta: { infoProducto: datosProducto } } = datosEntrada;
         const { infoGeneral } = datosEntrada;
 
         // Verificar si el usuario existe
@@ -217,6 +218,9 @@ router.post('/outputs', [
         if (!datosTercero) {
             return res.status(400).json({ error: 'Campos del Tercero obligatorios sin enviar' });
         }
+        if (!datosProducto) {
+            return res.status(400).json({ error: 'Campos del Producto obligatorios sin enviar' });
+        }
         
         const fecNow = new Date();
         // Obtener los componentes de la fecha
@@ -251,14 +255,23 @@ router.post('/outputs', [
         const personData = await PersonController.fillPerson(datosTercero,idUsuario,dbDate);                
         // ## Validate Person Information and Structure Initiation 
         const validatePerson = await PersonController.validatePerson(personData);        
-
         // ## Create or Modify Person Initiation with transaction
         const currentPerson = await PersonController.managePerson(personData,idUsuario,dbDate,transaction);
         idPersona = currentPerson.id;
         
-        await transaction.commit();
+        let arrProducto = [{
+            product_id: datosProducto.IdProduct,
+            cantidad: datosProducto.Cantidad,
+            precio: datosProducto.Precio,
+            subtotal: datosProducto.Subtotal,
+            total: datosProducto.Total,
+            descuento: datosProducto.Descuento,
+            iva: datosProducto.Iva
+        }];        
+        await transaction.rollback();                
+        //await transaction.commit();
 
-        return res.status(200).json({ message: 'Factura generada exitosamente', currentPerson,idPersona });
+        return res.status(200).json({ message: 'Factura generada exitosamente', arrProducto });
     } catch (error) {
         await transaction.rollback();
         
