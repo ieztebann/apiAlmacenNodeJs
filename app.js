@@ -14,9 +14,9 @@ const swaggerOptions = {
     swaggerDefinition: {
         openapi: '3.0.0',
         info: {
-            title: 'API de Ejemplo',
+            title: 'API',
             version: '1.0.0',
-            description: 'Documentacion de API almacen SILOG. EBRv1.0.0',
+            description: 'Documentacion de API SILOG. EBRv1.0.0',
         },
         servers: [
             {
@@ -41,13 +41,13 @@ app.use('/api/vtest', vTestListingsRoutes);//Listings
 app.use('/api/vtest', vTestOutputsRoutes);
 
 // Rutas de la API v1
-const v1ListingsRoutes = require('./routes/v1/listings');
-const v1OutputsRoutes = require('./routes/v1/outputs');
-app.use('/api/vtest', v1ListingsRoutes);//Listings
-app.use('/api/vtest', v1OutputsRoutes);
+const v1TicketRoutes = require('./routes/v1/ticket');
+const v1AgreementRoutes = require('./routes/v1/agreement');
+app.use('/api/v1', v1TicketRoutes);
+app.use('/api/v1', v1AgreementRoutes);
 
 
-app.listen(process.env.HTTPS_PORT, () => {
+app.listen(3021, () => {
   console.log(`Worker ${process.pid} started, API listening on port 3021`);
 });
 
