@@ -13,7 +13,7 @@ const { ProductDetails, PaymentFormInventories, TarjetaBanco, TipoDocIdentificac
  *       Este endpoint permite obtener una lista de códigos generales disponibles en el sistema. 
  *       Es útil para consultar información categorizada que puede ser utilizada en diversas operaciones en los endpointss.
  *     tags:
- *       - Listados  
+ *       - Almacen  
  *     responses:
  *       200:
  *         description: Listados encontrados

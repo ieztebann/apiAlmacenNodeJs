@@ -17,7 +17,7 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
  *     description: |
  *       Este endpoint permite realizar la creacion de facturas (Salidas de Inventario) de el Almacen.      
  *     tags:
- *       - Salidas Inventario
+ *       - Almacen
  *     requestBody:
  *       required: true
  *       content:
