@@ -121,30 +121,27 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
  *                   infoProducto:
  *                     type: object
  *                     properties:
- *                       TipoIdentificacion:
- *                          type: string
- *                          example: "BOP461"
- *                       Identificacion:
- *                          type: string
- *                          example: "2024-01-01"
- *                       Nombre:
- *                          type: string
- *                          example: "2024-01-01"  
- *                       PrimerApellido:
- *                          type: string
- *                          example: ""  
- *                       SegundoApellido:
- *                          type: string
- *                          example: ""  
- *                       Direccion:
- *                          type: string
- *                          example: ""   
- *                       Correo:
- *                          type: string
- *                          example: ""   
- *                       Celular:
- *                          type: string
- *                          example: ""   
+ *                       IdProduct:
+ *                          type: integer
+ *                          example: 1
+ *                       Cantidad:
+ *                          type: numeric
+ *                          example: 1
+ *                       Precio:
+ *                          type: numeric
+ *                          example: 10000  
+ *                       Descuento:
+ *                          type: numeric
+ *                          example: 0   
+ *                       Iva:
+ *                          type: numeric
+ *                          example: 0  
+ *                       Subtotal:
+ *                          type: numeric
+ *                          example: 10000  
+ *                       Total:
+ *                          type: numeric
+ *                          example: 10000 
  *                   infoPago:
  *                     type: object
  *                     properties:
