@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { Usuario, Persona, Sucursal } = require('../../models'); // Importa tus modelos de Sequelize
-const { PersonController, UtilController } = require('./controller');  // Importa la función de validación
+const { PersonController, UtilController, ProductController } = require('./controller');  // Importa la función de validación
 
 const app = express();
 const sequelize = require('../../config/database');
@@ -182,6 +182,7 @@ router.post('/outputs', [
         //
         const { infoFacturaVenta } = datosEntrada;            
         const { infoFacturaVenta: { infoTercero: datosTercero } } = datosEntrada;
+        const { infoFacturaVenta: { infoProducto: datosProducto } } = datosEntrada;
         const { infoGeneral } = datosEntrada;
 
         // Verificar si el usuario existe
@@ -207,8 +208,7 @@ router.post('/outputs', [
         const isValidPasswd = await UtilController.passwordValidate(infoGeneral.ContraseñaUsuario, usuarioActivo.password);
         if (!isValidPasswd) {
             return res.status(401).json({ error: 'Contraseña incorrecta' });
-        }
-        
+        }        
         idUsuario = usuarioActivo.id;
         
         if (!infoFacturaVenta) {
@@ -216,6 +216,9 @@ router.post('/outputs', [
         }
         if (!datosTercero) {
             return res.status(400).json({ error: 'Campos del Tercero obligatorios sin enviar' });
+        }
+        if (!datosProducto) {
+            return res.status(400).json({ error: 'Campos del Producto obligatorios sin enviar' });
         }
         
         const fecNow = new Date();
@@ -251,10 +254,12 @@ router.post('/outputs', [
         const personData = await PersonController.fillPerson(datosTercero,idUsuario,dbDate);                
         // ## Validate Person Information and Structure Initiation 
         const validatePerson = await PersonController.validatePerson(personData);        
-
         // ## Create or Modify Person Initiation with transaction
         const currentPerson = await PersonController.managePerson(personData,idUsuario,dbDate,transaction);
         idPersona = currentPerson.id;
+
+        // ## Fill Product Object Initiation 
+        const productData = await ProductController.fillProduct(datosProducto); 
         
         await transaction.commit();
 

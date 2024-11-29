@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { Usuario, Persona, Sucursal } = require('../../models'); // Importa tus modelos de Sequelize
-const { PersonController, UtilController } = require('./controller');  // Importa la función de validación
+const { PersonController, UtilController, ProductController } = require('./controller');  // Importa la función de validación
 
 const app = express();
 const sequelize = require('../../config/database');
@@ -254,24 +254,20 @@ router.post('/outputs', [
         const validatePerson = await PersonController.validatePerson(personData);        
         // ## Create or Modify Person Initiation with transaction
         const currentPerson = await PersonController.managePerson(personData,idUsuario,dbDate,transaction);
-        idPersona = currentPerson.id;
+        idPersona = currentPerson.id;       
         
-        let arrProducto = [{
-            product_id: datosProducto.IdProduct,
-            cantidad: datosProducto.Cantidad,
-            precio: datosProducto.Precio,
-            subtotal: datosProducto.Subtotal,
-            total: datosProducto.Total,
-            descuento: datosProducto.Descuento,
-            iva: datosProducto.Iva
-        }];        
+        
+        // ## Fill Product Object Initiation 
+        const productData = await ProductController.fillProduct(datosProducto); 
+        // ## Validate Person Information and Structure Initiation 
+        const validateProduct = await ProductController.validateProduct(datosProducto);      
+        
         await transaction.rollback();                
         //await transaction.commit();
 
-        return res.status(200).json({ message: 'Factura generada exitosamente', arrProducto });
+        return res.status(200).json({ message: 'Factura generada exitosamente', productData });
     } catch (error) {
         await transaction.rollback();
-        
         if(error.message){
             return res.status(500).json({ error: 'Se ha presentado un problema', message : error.message  });            
         }
