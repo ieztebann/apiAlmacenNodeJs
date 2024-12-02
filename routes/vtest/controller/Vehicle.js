@@ -2,6 +2,29 @@ const bcrypt = require('bcryptjs');
 const { Vehicle } = require('../../../models'); // Importa tus modelos de Sequelize
 
 /**
+ * Función para gestionar una persona, crea o actualiza registros en la base de datos.
+ * @param {Object} datosProducto - Datos de la persona a crear o actualizar.
+ * @param {number} idUsuario - ID del usuario que realiza la operación.
+ * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
+ * @returns {Promise<Object>} - Retorna el objeto Persona creado o actualizado.
+ */
+const getVehicle = async (Plate) => {
+    try {
+        const currentProductDetail = await Vehicle.findOne({
+            where: {
+                placa: Plate
+            },
+            attributes: ['id'] 
+        });
+        if (!currentProductDetail) {
+            throw new Error('Producto no permitido.');            
+        }
+        return currentProductDetail;
+    } catch (error) {
+        throw new Error('Error al consultar el producto. ('+error+')');
+    }
+};
+/**
  * Función para gestionar una producta, crea o actualiza registros en la base de datos.
  * @param {Object} productData - Datos de la producta a crear o actualizar.
  * @param {number} idUsuario - ID del usuario que realiza la operación.
@@ -9,24 +32,17 @@ const { Vehicle } = require('../../../models'); // Importa tus modelos de Sequel
  * @returns {Promise<Object>} - Retorna el objeto Vehicle creado o actualizado.
  */
 const fillVehicle = async (datosVehiculo) => {
-    let product;
+    let vehicle;
+    if(datosVehiculo.Plate ){
+        vehicle = await getVehicle(datosVehiculo.Plate);            
+    }
     try {    
         const productData = {
-            product_detail_id: datosVehiculo.VehicleId ? product.id : null,
-            cantidad: datosVehiculo.Quantity ? (datosVehiculo.Quantity) : null,
-            valor_unitario: datosVehiculo.Price ? (datosVehiculo.Price) : null, 
-            valor_total: datosVehiculo.Total ? (datosVehiculo.Total) : null,
-            valor_neto: datosVehiculo.Subtotal ? (datosVehiculo.Subtotal) : null,
-            valor_descuento: datosVehiculo.Discunt ? (datosVehiculo.Discunt) : 0.00,
-            valor_impuesto: datosVehiculo.Iva ? (datosVehiculo.Iva) : 0.00,
-            valor_venta: datosVehiculo.Price ? (datosVehiculo.Price) : null,
-            iva_descontable: 0.00,                        
-            valor_compra: datosVehiculo.Price ? (datosVehiculo.Price) : null,
-            valor_descuento_sin_imp: 0.00,
-            valor_descuento_con_imp: 0,
-            porcentaje_descuento: 0,
-            total_impuesto: datosVehiculo.Iva ? (datosVehiculo.Iva) : 0.00,
-            valor_venta_product: datosVehiculo.Price ? (datosVehiculo.Price) : null
+            id_vehiculo: datosVehiculo.Plate ? datosVehiculo.Plate : null,
+            placa: datosVehiculo.Plate ? datosVehiculo.Plate : null,
+            fecha_ultimo_mantenimiento: datosVehiculo.LastMaintenanceDate ? datosVehiculo.LastMaintenanceDate : null,
+            fecha_siguiente_mantenimiento: datosVehiculo.NextMaintenanceDate ? datosVehiculo.NextMaintenanceDate : null,
+            kilometros_veh: datosVehiculo.Mileage ? datosVehiculo.Mileage : null
         };
         return productData;
     } catch (error) {
