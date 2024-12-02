@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { Usuario, Persona, Sucursal } = require('../../models'); // Importa tus modelos de Sequelize
-const { PersonController, UtilController, ProductController, OutputController } = require('./controller');  // Importa la función de validación
+const { PersonController, UtilController, ProductController, OutputController, VehicleController } = require('./controller');  // Importa la función de validación
 
 const app = express();
 const sequelize = require('../../config/database');
@@ -199,12 +199,9 @@ router.post('/outputs', [
     // Iniciar una transacción
     const transaction = await sequelize.transaction();
     try {        
-
-        //
-        const { InvoiceInformation } = datosEntrada;            
-        const { InvoiceInformation: { InvoiceHolderInformation: datosTercero } } = datosEntrada;
-        const { InvoiceInformation: { ProductInformation: datosProducto } } = datosEntrada;
-        const { UserInformation } = datosEntrada;
+        
+        const { InvoiceInformation, UserInformation } = datosEntrada;            
+        const { InvoiceInformation: { ProductInformation: datosProducto, VehicleInformation: datosVehiculo, InvoiceHolderInformation: datosTercero } } = datosEntrada;
 
         // Verificar si el usuario existe
         let idUsuario = 0;
@@ -280,10 +277,12 @@ router.post('/outputs', [
         const currentPerson = await PersonController.managePerson(personData,idUsuario,dbDate,transaction);
         idPersona = currentPerson.id;       
         
-        // ## Fill Product Object Initiation 
+        // ## Product
         const productData = await ProductController.fillProduct(datosProducto); 
-        // ## Validate Person Information and Structure Initiation 
-        const validateProduct = await ProductController.validateProduct(productData);      
+        const validateProduct = await ProductController.validateProduct(productData); 
+        // ## Vehicle     
+        const vehicleData = await VehicleController.fillVehicle(datosVehiculo); 
+        const validateVehicle = await VehicleController.validateVehicle(vehicleData);      
         
         const outputData = await OutputController.fillOutput(currentPerson,productData); 
         //const creditData = await CreditController.Credit(datosProducto); 

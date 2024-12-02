@@ -39,11 +39,10 @@ const fillOutput = async (currentPerson, productData) => {
     
     try {    
         const productData = {
-            id_forma_aplica_seguro: currentPerson.ProductId ? product.id : null,
-            tarifa_seguro: currentPerson.Quantity ? (currentPerson.Quantity) : null,
-            id_persona: currentPerson.Price ? (currentPerson.Price) : null, 
-            fec_cre: currentPerson.Total ? (currentPerson.Total) : null,
-            id_concepto_comprobante: currentPerson.Subtotal ? (currentPerson.Subtotal) : null,
+            id_forma_aplica_seguro: 1,//porcentaje
+            tarifa_seguro: 0,
+            id_persona: currentPerson.id ? (currentPerson.id) : null, 
+            id_concepto_comprobante: () : null,
             id_empresa_operadora: currentPerson.Discunt ? (currentPerson.Discunt) : 0.00,
             fec_desembolso: currentPerson.Iva ? (currentPerson.Iva) : 0.00,
             fec_primera_cuota: currentPerson.Price ? (currentPerson.Price) : null,
