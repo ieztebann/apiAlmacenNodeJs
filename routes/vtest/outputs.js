@@ -260,7 +260,7 @@ router.post('/outputs', [
         // ## Fill Product Object Initiation 
         const productData = await ProductController.fillProduct(datosProducto); 
         // ## Validate Person Information and Structure Initiation 
-        const validateProduct = await ProductController.validateProduct(datosProducto);      
+        const validateProduct = await ProductController.validateProduct(productData);      
         
         await transaction.rollback();                
         //await transaction.commit();
