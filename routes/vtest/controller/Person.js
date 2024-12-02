@@ -55,16 +55,16 @@ const managePerson = async (personData, idUsuario, dbDate, transaction) => {
 const fillPerson = async (datosTercero, idUsuario, dbDate) => {
     try {
         const personData = {
-            id_tipo_persona: datosTercero.TipoIdentificacion === 6 ? 1 : 2,
-            id_tipo_doc_identificacion: datosTercero.TipoIdentificacion ? datosTercero.TipoIdentificacion : null,
-            nro_identificacion: datosTercero.Identificacion ? datosTercero.Identificacion : null, // Limpiar datos
-            nombre: datosTercero.Nombre ? datosTercero.Nombre.toUpperCase() : '',
-            primer_apellido: datosTercero.PrimerApellido ? datosTercero.PrimerApellido.toUpperCase() : null,
-            segundo_apellido: datosTercero.SegundoApellido ? datosTercero.SegundoApellido.toUpperCase() : null,
-            dir: datosTercero.Direccion ? datosTercero.Direccion.toUpperCase() : null,
-            celular: datosTercero.Celular ? datosTercero.Celular : null,
+            id_tipo_persona: datosTercero.TypeId === 6 ? 1 : 2,
+            id_tipo_doc_identificacion: datosTercero.TypeId ? datosTercero.TypeId : null,
+            nro_identificacion: datosTercero.Id ? datosTercero.Id : null, // Limpiar datos
+            nombre: datosTercero.Name ? datosTercero.Name.toUpperCase() : '',
+            primer_apellido: datosTercero.FirstLastName ? datosTercero.FirstLastName.toUpperCase() : null,
+            segundo_apellido: datosTercero.SecondLastName ? datosTercero.SecondLastName.toUpperCase() : null,
+            dir: datosTercero.Adress ? datosTercero.Adress.toUpperCase() : null,
+            celular: datosTercero.PhoneNumber ? datosTercero.PhoneNumber : null,
             tel_fijo: null,
-            e_mail: datosTercero.Correo ? datosTercero.Correo.trim() : null,
+            e_mail: datosTercero.Email ? datosTercero.Email.trim() : null,
             id_usuario_mod: idUsuario,
             fec_mod: dbDate
         };
