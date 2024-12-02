@@ -9,6 +9,7 @@ const TipoDocIdentificacionModel = require('./TipoDocIdentificacion');
 const SucursalModel = require('./Sucursal');
 const UsuarioModel = require('./Usuario');
 const PersonaModel = require('./Persona');
+const CreditoModel = require('./Credito');
 
 
 const Product = ProductModel(sequelize, DataTypes);
@@ -19,6 +20,7 @@ const TipoDocIdentificacion = TipoDocIdentificacionModel(sequelize, DataTypes);
 const Sucursal = SucursalModel(sequelize, DataTypes);
 const Usuario = UsuarioModel(sequelize, DataTypes);
 const Persona = PersonaModel(sequelize, DataTypes);
+const Credito = CreditoModel(sequelize, DataTypes);
 
 const db = {};
 db.Product = Product;
@@ -29,6 +31,7 @@ db.TipoDocIdentificacion = TipoDocIdentificacion;
 db.Sucursal = Sucursal;
 db.Usuario = Usuario;
 db.Persona = Persona;
+db.Credito = Credito;
 db.Sequelize = sequelize;
 
 module.exports = db;
