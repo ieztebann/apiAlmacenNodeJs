@@ -39,20 +39,20 @@ const fillProduct = async (datosProducto) => {
     try {    
         const productData = {
             product_detail_id: datosProducto.IdProduct ? product.id : null,
-            cantidad: datosProducto.Cantidad ? parseFloat(datosProducto.Cantidad) : null,
-            valor_unitario: datosProducto.Precio ? parseFloat(datosProducto.Precio) : null, 
-            valor_total: datosProducto.Total ? parseFloat(datosProducto.Total) : null,
-            valor_neto: datosProducto.Subtotal ? parseFloat(datosProducto.Subtotal) : null,
-            valor_descuento: datosProducto.Descuento ? parseFloat(datosProducto.Descuento) : 0.00,
-            valor_impuesto: datosProducto.Iva ? parseFloat(datosProducto.Iva) : 0.00,
-            valor_venta: datosProducto.Precio ? parseFloat(datosProducto.Precio) : null,
+            cantidad: datosProducto.Cantidad ? (datosProducto.Cantidad) : null,
+            valor_unitario: datosProducto.Precio ? (datosProducto.Precio) : null, 
+            valor_total: datosProducto.Total ? (datosProducto.Total) : null,
+            valor_neto: datosProducto.Subtotal ? (datosProducto.Subtotal) : null,
+            valor_descuento: datosProducto.Descuento ? (datosProducto.Descuento) : 0.00,
+            valor_impuesto: datosProducto.Iva ? (datosProducto.Iva) : 0.00,
+            valor_venta: datosProducto.Precio ? (datosProducto.Precio) : null,
             iva_descontable: 0.00,                        
-            valor_compra: datosProducto.Precio ? parseFloat(datosProducto.Precio) : null,
+            valor_compra: datosProducto.Precio ? (datosProducto.Precio) : null,
             valor_descuento_sin_imp: 0.00,
             valor_descuento_con_imp: 0,
             porcentaje_descuento: 0,
-            total_impuesto: datosProducto.Iva ? parseFloat(datosProducto.Iva) : 0.00,
-            valor_venta_product: datosProducto.Precio ? parseFloat(datosProducto.Precio) : null
+            total_impuesto: datosProducto.Iva ? (datosProducto.Iva) : 0.00,
+            valor_venta_product: datosProducto.Precio ? (datosProducto.Precio) : null
             /*,//
             total_utilidad: datosProducto.IdProduct,//*
             valor_utilidad_product: datosProducto.IdProduct,//*
@@ -78,73 +78,51 @@ const validateProduct = async (datosProducto) => {
         const regexLetters = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;;
         const regexNumeric = /^[0-9]+$/;
         const regexEmail = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;  
-        const regexThreeDecimals = /^\d+(\.\d{3})?$/;
-        
-        /**/
+        const regexThreeDecimals = /^\d+(\.\d{1,3})?$/;
+            
+        /* IdProduct */
         if (!datosProducto.product_detail_id) {
             throw new Error('Debe completar el identificador del producto.');                                                                                                                    
         }      
         if (!regexNumeric.test(datosProducto.product_detail_id)) {
             throw new Error('El identificador no es valido.');                                                                                                                    
         }         
-        /**/
+        /* Cantidad */
         if (!datosProducto.cantidad) {
             throw new Error('Debe completar la cantidad del producto.');                                                                                                                    
         }      
-        if (!regexNumeric.test(datosProducto.cantidad)) {
+        if (!regexThreeDecimals.test(datosProducto.cantidad)) {
             throw new Error('La cantidad no es valida.');                                                                                                                    
         }         
-        /* Name */ 
-        if (!regexLetters.test(datosProducto.nombre)) {
-            throw new Error('El nombre solo debe contener letras.');                                                                                                                   
-        }        
-        /* Document Identification */        
-        if (!datosProducto.id_tipo_doc_identificacion) {       
-            throw new Error('Debe completar el tipo de identificacion de la persona.');                                                                                                        
-            
+        /* Precio */ 
+        if (!datosProducto.valor_unitario) {
+            throw new Error('Debe completar el Precio del producto.');                                                                                                                    
         }      
-        /* Identification */                
-        if (!datosProducto.nro_identificacion) {
-            throw new Error('Debe completar la identificacion de la persona.');                                                                                                        
-            
-        }
-        if (datosProducto.id_tipo_doc_identificacion !== 7) {
-            if (!regexNumeric.test(datosProducto.nro_identificacion)) {
-                throw new Error('El tipo de identificación no es valido.');                                                                                                        
-            }
-        }
-        /* Last Names */        
-        if ((datosProducto.id_tipo_doc_identificacion === 6 && datosProducto.primer_apellido !== null && datosProducto.segundo_apellido !== null)) {
-            throw new Error('Las personas Juridicas unicamente solicitan nombre, no requieren apellidos.');                                                                                        
-        } 
-        if(datosProducto.primer_apellido !== null){
-            if (!regexLetters.test(datosProducto.primer_apellido)) {
-                throw new Error('El primer apellido solo debe contener letras.');                                                                            
-                
-            }             
-        }
-        if(datosProducto.segundo_apellido !== null){
-            if (!regexLetters.test(datosProducto.segundo_apellido)) {
-                throw new Error('El segundo apellido solo debe contener letras.');                                                                            
-            }             
+        if (!regexThreeDecimals.test(datosProducto.valor_unitario)) {
+            throw new Error('El Precio no es valido.');                                                                                                                    
         }         
-        /* Email */                
-        if (!datosProducto.e_mail) {
-            throw new Error('Debe completar el correo electrónico.');                                                            
-        }
-        if (!regexEmail.test(datosProducto.e_mail)) {
-            throw new Error('El correo no tiene un formato válido.');                                                
-        }        
-        /* Phone */                
-        if (!datosProducto.celular) {
-            throw new Error('El celular del tercero es obligatorio.');                                    
-        }
-        if (!regexNumeric.test(datosProducto.celular)) {
-            throw new Error('El celular no tiene un formato valido.');                        
-        }        
-        if (!datosProducto.celular.length === 10) {
-            throw new Error('El celular debe de contener 10 dígitos (celular).');            
-        }
+        /* Descuento */ 
+        if (!regexThreeDecimals.test(datosProducto.valor_descuento)) {
+            throw new Error('El Descuento no es valido.');                                                                                                                    
+        }         
+        /* Iva */  
+        if (!regexThreeDecimals.test(datosProducto.valor_impuesto)) {
+            throw new Error('El Iva no es valido.');                                                                                                                    
+        }             
+        /* Subtotal */ 
+        if (!datosProducto.valor_neto) {
+            throw new Error('Debe completar el Subtotal del producto.');                                                                                                                    
+        }      
+        if (!regexThreeDecimals.test(datosProducto.valor_neto)) {
+            throw new Error('El Subtotal no es valido.');                                                                                                                    
+        }                    
+        /* Total */ 
+        if (!datosProducto.valor_total) {
+            throw new Error('Debe completar el Total del producto.');                                                                                                                    
+        }      
+        if (!regexThreeDecimals.test(datosProducto.valor_total)) {
+            throw new Error('El Total no es valido.');                                                                                                                    
+        }           
         return true;
     } catch (error) {
         throw new Error(error);
