@@ -31,21 +31,22 @@ const getProduct = async (ProductId) => {
  * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
  * @returns {Promise<Object>} - Retorna el objeto Product creado o actualizado.
  */
-const fillOutput = async (currentPerson, productData) => {
+const fillOutput = async (currentPerson, productData,currentVehicle,InvoiceInformation) => {
     let product;
     if(currentPerson.ProductId ){
         product = await getProduct(currentPerson.ProductId);            
     }
-    
+    const now = new Date();
+    const currentTime = now.toTimeString().split(' ')[0]; // 'HH:mm:ss'    
     try {    
         const productData = {
             id_forma_aplica_seguro: 1,//porcentaje
             tarifa_seguro: 0,
             id_persona: currentPerson.id ? (currentPerson.id) : null, 
-            id_concepto_comprobante: () : null,
+            id_concepto_comprobante: currentVehicle.id ? (1052) : 1156,
             id_empresa_operadora: currentPerson.Discunt ? (currentPerson.Discunt) : 0.00,
-            fec_desembolso: currentPerson.Iva ? (currentPerson.Iva) : 0.00,
-            fec_primera_cuota: currentPerson.Price ? (currentPerson.Price) : null,
+            fec_desembolso: InvoiceInformation.InvoiceDate ? `${InvoiceInformation.InvoiceDate} ${currentTime}` : null,
+            fec_primera_cuota: InvoiceInformation.InvoiceDate ? (InvoiceInformation.InvoiceDate) : null,
             monto: 0.00,                        
             saldo_actual: currentPerson.Price ? (currentPerson.Price) : null,
             cant_cuotas: 0.00,
