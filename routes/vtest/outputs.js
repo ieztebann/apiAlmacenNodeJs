@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { Usuario, Persona, Sucursal } = require('../../models'); // Importa tus modelos de Sequelize
-const { PersonController, UtilController, ProductController, OutputController, VehicleController } = require('./controller');  // Importa la función de validación
+const { PersonController, UtilController, ProductController, OutputController, VehicleController, PaymentController } = require('./controller');  // Importa la función de validación
 
 const app = express();
 const sequelize = require('../../config/database');
@@ -58,14 +58,17 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
  *                     type: string
  *                     description: "Referencia con la que identifican el dispensador"                     
  *                     example: "1"
+ *                     nullable: true
  *                   Island:
  *                     type: string
  *                     description: "Referencia con la que identifican la Isla del dispensador"                     
  *                     example: "1"
+ *                     nullable: true
  *                   Hose:
  *                     type: string
  *                     description: "Referencia con la que identifican la manguera del dispensador"                     
  *                     example: "1"
+ *                     nullable: true
  *               InvoiceInformation:
  *                 type: object
  *                 description: "Informacion de la factura"    
@@ -201,7 +204,7 @@ router.post('/outputs', [
     try {        
         
         const { InvoiceInformation, UserInformation } = datosEntrada;            
-        const { InvoiceInformation: { ProductInformation: datosProducto, VehicleInformation: datosVehiculo, InvoiceHolderInformation: datosTercero } } = datosEntrada;
+        const { InvoiceInformation: { ProductInformation: datosProducto, VehicleInformation: datosVehiculo, PaymentInformation : datosPago, InvoiceHolderInformation: datosTercero } } = datosEntrada;
 
         // Verificar si el usuario existe
         let idUsuario = 0;
@@ -231,13 +234,16 @@ router.post('/outputs', [
         idUsuario = usuarioActivo.id;
         
         if (!InvoiceInformation) {
-            return res.status(400).json({ error: 'Campos de la Factura obligatorios sin enviar' });
+            return res.status(400).json({ error: 'Campos de la Factura obligatorios' });
         }
         if (!datosTercero) {
-            return res.status(400).json({ error: 'Campos del Tercero obligatorios sin enviar' });
+            return res.status(400).json({ error: 'Campos del Tercero obligatorios' });
         }
         if (!datosProducto) {
-            return res.status(400).json({ error: 'Campos del Producto obligatorios sin enviar' });
+            return res.status(400).json({ error: 'Campos del Producto obligatorios' });
+        }
+        if (!datosPago) {
+            return res.status(400).json({ error: 'Campos del Pago obligatorios' });
         }
         
         const fecNow = new Date();
@@ -271,26 +277,37 @@ router.post('/outputs', [
 
         // ## Fill Person Object Initiation 
         const personData = await PersonController.fillPerson(datosTercero,idUsuario,dbDate);                
-        // ## Validate Person Information and Structure Initiation 
         const validatePerson = await PersonController.validatePerson(personData);        
-        // ## Create or Modify Person Initiation with transaction
         const currentPerson = await PersonController.managePerson(personData,idUsuario,dbDate,transaction);
         idPersona = currentPerson.id;       
         
         // ## Product
         const productData = await ProductController.fillProduct(datosProducto); 
         const validateProduct = await ProductController.validateProduct(productData); 
-        // ## Vehicle     
-        const vehicleData = await VehicleController.fillVehicle(datosVehiculo); 
-        const validateVehicle = await VehicleController.validateVehicle(vehicleData);      
         
-        const outputData = await OutputController.fillOutput(currentPerson,productData); 
+        // ## Vehicle   
+        let vehicleData;
+        let validateVehicle;
+        let currentVehicle;
+        
+        if(datosVehiculo){
+            vehicleData = await VehicleController.fillVehicle(datosVehiculo); 
+            validateVehicle = await VehicleController.validateVehicle(vehicleData);      
+            currentVehicle = await VehicleController.manageVehicle(vehicleData, idPersona, idUsuario, transaction);         
+        }
+               
+        const paymentData = await PaymentController.fillPayment(datosPago); 
+        const validatePayment = await PaymentController.validatePayment(paymentData); 
+        const currentPayment = await PaymentController.getPayment(paymentData);         
+        
+        await transaction.rollback();                            
+        return res.status(200).json({ message: 'Factura generada exitosamente', currentPayment });
+        const outputData = await OutputController.fillOutput(currentPerson,productData,currentVehicle,InvoiceInformation); 
+
         //const creditData = await CreditController.Credit(datosProducto); 
         
-        await transaction.rollback();                
         //await transaction.commit();
 
-        return res.status(200).json({ message: 'Factura generada exitosamente', productData });
     } catch (error) {
         await transaction.rollback();
         if(error.message){
