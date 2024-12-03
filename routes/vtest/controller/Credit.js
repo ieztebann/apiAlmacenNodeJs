@@ -1,59 +1,32 @@
 const bcrypt = require('bcryptjs');
-const { Product, ProductDetails } = require('../../../models'); // Importa tus modelos de Sequelize
+const { Credit } = require('../../../models'); // Importa tus modelos de Sequelize
 
-/**
- * Función para gestionar una persona, crea o actualiza registros en la base de datos.
- * @param {Object} datosProducto - Datos de la persona a crear o actualizar.
- * @param {number} idUsuario - ID del usuario que realiza la operación.
- * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
- * @returns {Promise<Object>} - Retorna el objeto Persona creado o actualizado.
- */
-const getProduct = async (ProductId) => {
-    try {
-        const currentProductDetail = await ProductDetails.findOne({
-            where: {
-                id: ProductId
-            },
-            attributes: ['id'] 
-        });
-        if (!currentProductDetail) {
-            throw new Error('Producto no permitido.');            
-        }
-        return currentProductDetail;
-    } catch (error) {
-        throw new Error('Error al consultar el producto. ('+error+')');
-    }
-};
 /**
  * Función para gestionar una producta, crea o actualiza registros en la base de datos.
  * @param {Object} productData - Datos de la producta a crear o actualizar.
  * @param {number} idUsuario - ID del usuario que realiza la operación.
  * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
- * @returns {Promise<Object>} - Retorna el objeto Product creado o actualizado.
+ * @returns {Promise<Object>} - Retorna el objeto Credit creado o actualizado.
  */
-const fillProduct = async (datosProducto) => {
+const fillCredit = async (datosCredito) => {
     let product;
-    if(datosProducto.ProductId ){
-        product = await getProduct(datosProducto.ProductId);            
-    }
-    
     try {    
         const productData = {
-            product_detail_id: datosProducto.ProductId ? product.id : null,
-            cantidad: datosProducto.Quantity ? (datosProducto.Quantity) : null,
-            valor_unitario: datosProducto.Price ? (datosProducto.Price) : null, 
-            valor_total: datosProducto.Total ? (datosProducto.Total) : null,
-            valor_neto: datosProducto.Subtotal ? (datosProducto.Subtotal) : null,
-            valor_descuento: datosProducto.Discunt ? (datosProducto.Discunt) : 0.00,
-            valor_impuesto: datosProducto.Iva ? (datosProducto.Iva) : 0.00,
-            valor_venta: datosProducto.Price ? (datosProducto.Price) : null,
+            product_detail_id: datosCredito.CreditId ? product.id : null,
+            cantidad: datosCredito.Quantity ? (datosCredito.Quantity) : null,
+            valor_unitario: datosCredito.Price ? (datosCredito.Price) : null, 
+            valor_total: datosCredito.Total ? (datosCredito.Total) : null,
+            valor_neto: datosCredito.Subtotal ? (datosCredito.Subtotal) : null,
+            valor_descuento: datosCredito.Discunt ? (datosCredito.Discunt) : 0.00,
+            valor_impuesto: datosCredito.Iva ? (datosCredito.Iva) : 0.00,
+            valor_venta: datosCredito.Price ? (datosCredito.Price) : null,
             iva_descontable: 0.00,                        
-            valor_compra: datosProducto.Price ? (datosProducto.Price) : null,
+            valor_compra: datosCredito.Price ? (datosCredito.Price) : null,
             valor_descuento_sin_imp: 0.00,
             valor_descuento_con_imp: 0,
             porcentaje_descuento: 0,
-            total_impuesto: datosProducto.Iva ? (datosProducto.Iva) : 0.00,
-            valor_venta_product: datosProducto.Price ? (datosProducto.Price) : null
+            total_impuesto: datosCredito.Iva ? (datosCredito.Iva) : 0.00,
+            valor_venta_product: datosCredito.Price ? (datosCredito.Price) : null
         };
         return productData;
     } catch (error) {
@@ -62,10 +35,10 @@ const fillProduct = async (datosProducto) => {
 };
 /**
  * Función para gestionar una persona, crea o actualiza registros en la base de datos.
- * @param {Object} datosProducto - Datos de la persona a validar.
+ * @param {Object} datosCredito - Datos de la persona a validar.
  * @returns {Promise<boolean>} - Retorna `true` si es valido, `false` de lo contrario.
  */
-const validateProduct = async (datosProducto) => {
+const validateCredit = async (datosCredito) => {
     try {
         /* Validation With Regex */
         const regexLetters = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;;
@@ -73,47 +46,47 @@ const validateProduct = async (datosProducto) => {
         const regexEmail = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;  
         const regexThreeDecimals = /^\d+(\.\d{1,3})?$/;
             
-        /* ProductId */
-        if (!datosProducto.product_detail_id) {
+        /* CreditId */
+        if (!datosCredito.product_detail_id) {
             throw new Error('Debe completar el identificador del producto.');                                                                                                                    
         }      
-        if (!regexNumeric.test(datosProducto.product_detail_id)) {
+        if (!regexNumeric.test(datosCredito.product_detail_id)) {
             throw new Error('El identificador no es valido.');                                                                                                                    
         }         
         /* Cantidad */
-        if (!datosProducto.cantidad) {
+        if (!datosCredito.cantidad) {
             throw new Error('Debe completar la cantidad del producto.');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.cantidad)) {
+        if (!regexThreeDecimals.test(datosCredito.cantidad)) {
             throw new Error('La cantidad no es valida.');                                                                                                                    
         }         
         /* Precio */ 
-        if (!datosProducto.valor_unitario) {
+        if (!datosCredito.valor_unitario) {
             throw new Error('Debe completar el Precio del producto.');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.valor_unitario)) {
+        if (!regexThreeDecimals.test(datosCredito.valor_unitario)) {
             throw new Error('El Precio no es valido.');                                                                                                                    
         }         
         /* Descuento */ 
-        if (!regexThreeDecimals.test(datosProducto.valor_descuento)) {
+        if (!regexThreeDecimals.test(datosCredito.valor_descuento)) {
             throw new Error('El Descuento no es valido.');                                                                                                                    
         }         
         /* Iva */  
-        if (!regexThreeDecimals.test(datosProducto.valor_impuesto)) {
+        if (!regexThreeDecimals.test(datosCredito.valor_impuesto)) {
             throw new Error('El Iva no es valido.');                                                                                                                    
         }             
         /* Subtotal */ 
-        if (!datosProducto.valor_neto) {
+        if (!datosCredito.valor_neto) {
             throw new Error('Debe completar el Subtotal del producto.');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.valor_neto)) {
+        if (!regexThreeDecimals.test(datosCredito.valor_neto)) {
             throw new Error('El Subtotal no es valido.');                                                                                                                    
         }                    
         /* Total */ 
-        if (!datosProducto.valor_total) {
+        if (!datosCredito.valor_total) {
             throw new Error('Debe completar el Total del producto.');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.valor_total)) {
+        if (!regexThreeDecimals.test(datosCredito.valor_total)) {
             throw new Error('El Total no es valido.');                                                                                                                    
         }           
         return true;
@@ -122,4 +95,4 @@ const validateProduct = async (datosProducto) => {
     }
 };
 
-module.exports = { fillProduct, validateProduct };
+module.exports = { fillCredit, validateCredit };
