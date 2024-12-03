@@ -10,6 +10,8 @@ const SucursalModel = require('./Sucursal');
 const UsuarioModel = require('./Usuario');
 const PersonaModel = require('./Persona');
 const CreditoModel = require('./Credito');
+const VehicleModel = require('./Vehicle');
+const ExternalVehicleModel = require('./ExternalVehicle');
 
 
 const Product = ProductModel(sequelize, DataTypes);
@@ -21,6 +23,8 @@ const Sucursal = SucursalModel(sequelize, DataTypes);
 const Usuario = UsuarioModel(sequelize, DataTypes);
 const Persona = PersonaModel(sequelize, DataTypes);
 const Credito = CreditoModel(sequelize, DataTypes);
+const Vehicle = VehicleModel(sequelize, DataTypes);
+const ExternalVehicle = ExternalVehicleModel(sequelize, DataTypes);
 
 const db = {};
 db.Product = Product;
@@ -32,6 +36,8 @@ db.Sucursal = Sucursal;
 db.Usuario = Usuario;
 db.Persona = Persona;
 db.Credito = Credito;
+db.Vehicle = Vehicle;
+db.ExternalVehicle = ExternalVehicle;
 db.Sequelize = sequelize;
 
 module.exports = db;
