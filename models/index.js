@@ -12,6 +12,7 @@ const PersonaModel = require('./Persona');
 const CreditoModel = require('./Credito');
 const VehicleModel = require('./Vehicle');
 const ExternalVehicleModel = require('./ExternalVehicle');
+const EmpresaSistemaModel = require('./EmpresaSistema');
 
 
 const Product = ProductModel(sequelize, DataTypes);
@@ -25,6 +26,7 @@ const Persona = PersonaModel(sequelize, DataTypes);
 const Credito = CreditoModel(sequelize, DataTypes);
 const Vehicle = VehicleModel(sequelize, DataTypes);
 const ExternalVehicle = ExternalVehicleModel(sequelize, DataTypes);
+const EmpresaSistema = EmpresaSistemaModel(sequelize, DataTypes);
 
 const db = {};
 db.Product = Product;
@@ -38,6 +40,7 @@ db.Persona = Persona;
 db.Credito = Credito;
 db.Vehicle = Vehicle;
 db.ExternalVehicle = ExternalVehicle;
+db.EmpresaSistema = EmpresaSistema;
 db.Sequelize = sequelize;
 
 module.exports = db;
