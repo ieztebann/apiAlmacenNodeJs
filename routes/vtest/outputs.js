@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { Usuario, Persona, Sucursal } = require('../../models'); // Importa tus modelos de Sequelize
-const { PersonController, UtilController, ProductController, OutputController, VehicleController, PaymentController } = require('./controller');  // Importa la función de validación
+const { PersonController, UtilController, ProductController, OutputController, VehicleController, PaymentController, CreditController } = require('./controller');  // Importa la función de validación
 
 const app = express();
 const sequelize = require('../../config/database');
@@ -270,8 +270,9 @@ router.post('/outputs', [
 
         if (!sucursal) {
             return res.status(404).json({ error: `Sucursal invalida, consulte los listados` });
-        }
-        const idSucursal = sucursal.id_sucursal;
+        }        
+        
+        const idSucursal = sucursal.id;
         let idPersona = 0;
 
 
@@ -295,21 +296,38 @@ router.post('/outputs', [
             validateVehicle = await VehicleController.validateVehicle(vehicleData);      
             currentVehicle = await VehicleController.manageVehicle(vehicleData, idPersona, idUsuario, transaction);         
         }
-               
+        //Payment
         const paymentData = await PaymentController.fillPayment(datosPago); 
         const validatePayment = await PaymentController.validatePayment(paymentData); 
         const currentPayment = await PaymentController.getPayment(paymentData);         
         
-        await transaction.rollback();                            
-        return res.status(200).json({ message: 'Factura generada exitosamente', currentPayment });
-        const outputData = await OutputController.fillOutput(currentPerson,productData,currentVehicle,InvoiceInformation); 
-
+        // Reservar ID para la tabla principal
+        const [inventoryOutputsIdSeq] = await sequelize.query(
+            "SELECT nextval('almacen.inventory_outputs_id_seq') AS id", // Cambia por el nombre correcto de tu secuencia
+            { transaction }
+        );
+        const outputId = await inventoryOutputsIdSeq[0].id;  
+        //Credit
+        let creditData;
+        if(currentPayment.currentPaymentForm.id === 3){
+            creditData = await CreditController.fillCredit(currentPerson,productData,currentVehicle,InvoiceInformation, currentPayment, outputId, idSucursal, idUsuario);             
+            //validar
+            //currentCredit --- exception si no lo trae
+        }
+        const outputData = await OutputController.fillOutput(currentPerson,productData,currentVehicle,InvoiceInformation, currentPayment, outputId, idSucursal, idUsuario, creditData); 
+        
+        if (!transaction.finished) {
+            await transaction.rollback();
+        }                          
+        return res.status(200).json({ message: 'Factura generada exitosamente', outputData });
         //const creditData = await CreditController.Credit(datosProducto); 
         
         //await transaction.commit();
 
     } catch (error) {
-        await transaction.rollback();
+        if (!transaction.finished) {
+            await transaction.rollback();
+        }        
         if(error.message){
             return res.status(500).json({ error: 'Se ha presentado un problema', message : error.message  });            
         }
