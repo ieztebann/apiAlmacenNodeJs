@@ -111,9 +111,15 @@ const validatePerson = async (personData) => {
             }
         }
         /* Last Names */        
-        if ((personData.id_tipo_doc_identificacion === 6 && personData.primer_apellido !== null && personData.segundo_apellido !== null)) {
-            throw new Error('Las personas Juridicas unicamente solicitan nombre, no requieren apellidos.');                                                                                        
+        if ((personData.id_tipo_doc_identificacion === 6)) {
+            if (personData.primer_apellido) {
+                throw new Error('Las personas Juridicas unicamente solicitan nombre, no requieren apellidos.');                                                                                        
+            } 
+            if (personData.segundo_apellido) {
+                throw new Error('Las personas Juridicas unicamente solicitan nombre, no requieren apellidos.');                                                                                        
+            }            
         } 
+
         if(personData.primer_apellido !== null){
             if (!regexLetters.test(personData.primer_apellido)) {
                 throw new Error('El primer apellido solo debe contener letras.');                                                                            
