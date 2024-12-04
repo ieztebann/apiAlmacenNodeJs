@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { Credit } = require('../../../models'); // Importa tus modelos de Sequelize
+const { getEmpresaSistema } = require('./EmpresaSistema');
 
 /**
  * Función para gestionar una producta, crea o actualiza registros en la base de datos.
@@ -8,29 +9,36 @@ const { Credit } = require('../../../models'); // Importa tus modelos de Sequeli
  * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
  * @returns {Promise<Object>} - Retorna el objeto Credit creado o actualizado.
  */
-const fillCredit = async (datosCredito) => {
-    let product;
+const fillCredit = async (currentPerson,productData,currentVehicle,InvoiceInformation, currentPayment, outputId, idSucursal, idUsuario) => {
+    const now = new Date();
+    const currentTime = now.toTimeString().split(' ')[0]; // 'HH:mm:ss'       
+    const id_empresa_operadora = await getEmpresaSistema();    
     try {    
-        const productData = {
-            product_detail_id: datosCredito.CreditId ? product.id : null,
-            cantidad: datosCredito.Quantity ? (datosCredito.Quantity) : null,
-            valor_unitario: datosCredito.Price ? (datosCredito.Price) : null, 
-            valor_total: datosCredito.Total ? (datosCredito.Total) : null,
-            valor_neto: datosCredito.Subtotal ? (datosCredito.Subtotal) : null,
-            valor_descuento: datosCredito.Discunt ? (datosCredito.Discunt) : 0.00,
-            valor_impuesto: datosCredito.Iva ? (datosCredito.Iva) : 0.00,
-            valor_venta: datosCredito.Price ? (datosCredito.Price) : null,
-            iva_descontable: 0.00,                        
-            valor_compra: datosCredito.Price ? (datosCredito.Price) : null,
-            valor_descuento_sin_imp: 0.00,
-            valor_descuento_con_imp: 0,
-            porcentaje_descuento: 0,
-            total_impuesto: datosCredito.Iva ? (datosCredito.Iva) : 0.00,
-            valor_venta_product: datosCredito.Price ? (datosCredito.Price) : null
+        const CreditData = {
+            id_forma_aplica_seguro: 1,//porcentaje
+            tarifa_seguro: 0,
+            id_persona: currentPerson.id ? (currentPerson.id) : null, 
+            id_concepto_comprobante: currentVehicle && currentVehicle.id ? (1052) : 1156,
+            id_empresa_operadora: id_empresa_operadora.idPersona ? (id_empresa_operadora.idPersona) : null,
+            fec_desembolso: InvoiceInformation.InvoiceDate ? `${InvoiceInformation.InvoiceDate} ${currentTime}` : null,
+            fec_primera_cuota: InvoiceInformation.InvoiceDate ? (InvoiceInformation.InvoiceDate) : null,
+            monto: currentPayment.currentPaymentForm.id === 3 ? productData.valor_total : 0,                        
+            saldo_actual: currentPayment.currentPaymentForm.id === 3 ? productData.valor_total : 0,
+            cant_cuotas: 1,
+            tasa_interes: 0,
+            tasa_interes_mora: 0,
+            id_periodo_aplica_credito: 1,
+            id_forma_pago_credito: 4,
+            id_sucursal: idSucursal ? idSucursal : null,
+            id_usuario_cre: idUsuario ? idUsuario : null,
+            id_especifico: outputId ? outputId : null,
+            output_inventory_id: outputId ? outputId : null,
+            nro_especifico: InvoiceInformation.PosConsecutive ? InvoiceInformation.PosConsecutive : null,
+            id_vehiculo: currentVehicle && currentVehicle.id ? currentVehicle && currentVehicle.id : null
         };
-        return productData;
+        return CreditData;
     } catch (error) {
-        throw new Error('Error al llenar la informacion de la producto.'+error);
+        throw new Error('Error al llenar la informacion del credito.'+error);
     }
 };
 /**
