@@ -3,7 +3,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { Usuario, Persona, Sucursal } = require('../../models'); // Importa tus modelos de Sequelize
 const { PersonController, UtilController, ProductController, OutputController, VehicleController, PaymentController, CreditController } = require('./controller');  // Importa la función de validación
-
+//esteban
 const app = express();
 const sequelize = require('../../config/database');
 
