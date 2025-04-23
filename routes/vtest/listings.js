@@ -13,7 +13,7 @@ const { ProductDetails, PaymentFormInventories, TarjetaBanco, TipoDocIdentificac
  *       Este endpoint permite obtener una lista de códigos generales disponibles en el sistema. 
  *       Es útil para consultar información categorizada que puede ser utilizada en diversas operaciones en los endpointss.
  *     tags:
- *       - Almacen  
+ *       - Listados  
  *     responses:
  *       200:
  *         description: Listados encontrados
@@ -76,7 +76,7 @@ router.get('/listings', async (req, res) => {
         }
 
         /*Products*/
-        let filterProduct = datosEntrada?.filter_product || { apply_app: true };
+        let filterProduct = datosEntrada && datosEntrada.filter_product || { apply_app: true };
 
         let products = await ProductDetails.findAll({
             where: filterProduct,

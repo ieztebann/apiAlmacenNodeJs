@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const https = require('https');
 const { Op } = require('sequelize');
-const { ProductDetails, PaymentFormInventories, TarjetaBanco, TipoDocIdentificacion, Sucursal } = require('../../models');
+const { ProductDetails, PaymentFormInventories,PaymentMethodInventories,PaymentMeanInventories, TarjetaBanco, TipoDocIdentificacion, Sucursal } = require('../../models');
 
 /**
  * @swagger
@@ -76,7 +76,7 @@ router.get('/listings', async (req, res) => {
         }
 
         /*Products*/
-        let filterProduct = datosEntrada?.filter_product || { apply_app: true };
+        let filterProduct = datosEntrada && datosEntrada.filter_product || { apply_app: true };
 
         let products = await ProductDetails.findAll({
             where: filterProduct,
@@ -91,19 +91,60 @@ router.get('/listings', async (req, res) => {
             }));
         }
 
-        /*Payment Methods*/
+        let filterForms = datosEntrada && datosEntrada.filter_forms || { register_status_id: 1 };
+        let filterMethods = datosEntrada && datosEntrada.filter_methods || { register_status_id: 1 };
+        let filterMeans = datosEntrada && datosEntrada.filter_means || { register_status_id: 1 };
         
-        let paymentMethods = await PaymentFormInventories.findAll({
-            order: [['id', 'ASC']],
-            schema: 'almacen'
+        // Obtener todos
+        const [paymentForms, paymentMethods, paymentMeans] = await Promise.all([
+            PaymentFormInventories.findAll({
+                where: filterForms,
+                order: [['id', 'ASC']],
+                schema: 'almacen'
+            }),
+            PaymentMethodInventories.findAll({
+                where: filterMethods,
+                order: [['id', 'ASC']],
+                schema: 'almacen'
+            }),
+            PaymentMeanInventories.findAll({
+                where: filterMeans,
+                order: [['id', 'ASC']],
+                schema: 'almacen'
+            })
+        ]);
+        
+        // Agrupar medios por método
+        const mediosPorMetodo = {};
+        paymentMeans.forEach(m => {
+            if (!mediosPorMetodo[m.payment_method_inventory_id]) {
+                mediosPorMetodo[m.payment_method_inventory_id] = [];
+            }
+            mediosPorMetodo[m.payment_method_inventory_id].push({
+                id: m.id,
+                name: m.name
+            });
         });
-
-        if (paymentMethods.length > 0) {
-            response.paymentMethods = paymentMethods.map(paymentMethod => ({
-                id: paymentMethod.id,
-                name: paymentMethod.name
-            }));
-        }
+        
+        // Agrupar métodos por forma
+        const metodosPorForma = {};
+        paymentMethods.forEach(m => {
+            if (!metodosPorForma[m.payment_form_inventory_id]) {
+                metodosPorForma[m.payment_form_inventory_id] = [];
+            }
+            metodosPorForma[m.payment_form_inventory_id].push({
+                id: m.id,
+                name: m.name,
+                paymentMeans: mediosPorMetodo[m.id] || []
+            });
+        });
+        
+        // Construir la respuesta final
+        response.paymentForms = paymentForms.map(f => ({
+            id: f.id,
+            name: f.name,
+            paymentMethods: metodosPorForma[f.id] || []
+        }));   
 
         // Enviar respuesta con los datos obtenidos
         return res.status(200).json(response);

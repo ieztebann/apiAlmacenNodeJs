@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { Usuario, Persona, Sucursal } = require('../../models'); // Importa tus modelos de Sequelize
-const { PersonController, UtilController, ProductController } = require('./controller');  // Importa la función de validación
-
+const { PersonController, UtilController, ProductController, OutputController, VehicleController, PaymentController, CreditController } = require('./controller');  // Importa la función de validación
 const app = express();
 const sequelize = require('../../config/database');
 
@@ -24,147 +23,174 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
  *         application/json:
  *           schema:
  *             type: object
+ *             description: "Informacion Estructurada de La Factura"           
+ *             required:
+ *               - UserInformation
+ *               - StationInformation          
+ *               - InvoiceInformation          
  *             properties:
- *               infoGeneral:
+ *               UserInformation:
  *                 type: object
+ *                 description: "Informacion del Usuario que genera la factura"
+ *                 required:
+ *                   - SucursalId
+ *                   - UserIdent          
+ *                   - UserPassword
  *                 properties:
- *                   IdSucursal:
+ *                   SucursalId:
  *                     type: integer
+ *                     description: "Identificador de la sucursal donde genera la factura"
  *                     example: 1
- *                   IdentificacionUsuario:
+ *                   UserIdent:
  *                     type: string
+ *                     description: "Identificacion del usuario que genera la factura"
  *                     example: "1234567890"
- *                   ContraseñaUsuario:
+ *                   UserPassword:
  *                     type: string
+ *                     description: "Contraseña del usuario que genera la factura"
  *                     example: "pepitoperez123"
- *               infoEstacion:
+ *               StationInformation:
  *                 type: object
+ *                 description: "Informacion de la Estacion de Servicios"                
  *                 properties:
- *                   Surtidor:
+ *                   Dispenser:
  *                     type: string
- *                     example: "11A"
- *                   Cara:
+ *                     description: "Referencia con la que identifican el dispensador"                     
+ *                     example: "1"
+ *                     nullable: true
+ *                   Island:
  *                     type: string
- *                     example: "21B"
- *                   Manguera:
+ *                     description: "Referencia con la que identifican la Isla del dispensador"                     
+ *                     example: "1"
+ *                     nullable: true
+ *                   Hose:
  *                     type: string
- *                     example: "02C"
- *               infoFacturaVenta:
+ *                     description: "Referencia con la que identifican la manguera del dispensador"                     
+ *                     example: "1"
+ *                     nullable: true
+ *               InvoiceInformation:
  *                 type: object
+ *                 description: "Informacion de la factura"    
+ *                 required:
+ *                   - PosPrefix
+ *                   - PosConsecutive          
+ *                   - InvoiceDate              
+ *                   - VehicleInformation              
+ *                   - InvoiceHolderInformation              
+ *                   - ProductInformation              
+ *                   - PaymentInformation              
  *                 properties:
- *                   Consecutivo:
- *                     type: integer
- *                     example: 123
- *                   paymentForm:
- *                     type: integer
- *                     example: 2
- *                   FechaFacturacion:
+ *                   DianPrefix:
  *                     type: string
- *                     example: "2024-09-01"
- *                   Detalles:
+ *                     description: "Prefijo resolucion DIAN"
+ *                     example: "DIAN"
+ *                   DianConsecutive:
+ *                     type: integer
+ *                     description: "Consecutivo resolucion DIAN"                  
+ *                     example: 1234
+ *                   PosPrefix:
  *                     type: string
- *                     example: "2024-09-01"
- *                   infoVehiculo:
+ *                     example: "POS"                    
+ *                   PosConsecutive:
+ *                     type: integer
+ *                     example: 1234
+ *                   InvoiceDate:
+ *                     type: string
+ *                     example: "2024-12-24"
+ *                   Details:
+ *                     type: string
+ *                     example: "Placa: LWY535, Kilometraje : 0.00, Nro Transaccion : 123"
+ *                   VehicleInformation:
  *                     type: object
  *                     properties:
- *                       Placa:
+ *                       Plate:
  *                          type: string
- *                          example: "BOP461"
- *                       FechaUltimoMantenimiento:
+ *                          example: "LWY535"
+ *                       LastMaintenanceDate:
  *                          type: string
- *                          example: "2024-01-01"
- *                       FechaProximoMantenimiento:
+ *                          example: "2024-07-11"
+ *                       NextMaintenanceDate:
  *                          type: string
- *                          example: "2024-01-01"  
- *                       Kilometraje:
+ *                          example: "2025-07-11"  
+ *                       Mileage:
  *                          type: string
- *                          example: ""  
- *                       Modelo:
- *                          type: string
- *                          example: ""  
- *                       Marca:
- *                          type: string
- *                          example: ""   
- *                       Linea:
- *                          type: string
- *                          example: ""   
- *                       Tag:
- *                          type: string
- *                          example: ""  
- *                   infoTercero:
+ *                          example: "125.40" 
+ *                   InvoiceHolderInformation:
  *                     type: object
  *                     properties:
- *                       TipoIdentificacion:
+ *                       TypeId:
  *                          type: integer
- *                          example: 1
- *                       Identificacion:
+ *                          example: 6
+ *                       Id:
  *                          type: string
- *                          example: "1016943625"
- *                       Nombre:
+ *                          example: "890200218"
+ *                       Name:
  *                          type: string
- *                          example: "Esteban"  
- *                       PrimerApellido:
+ *                          example: "Cotaxi"  
+ *                       FirstLastName:
  *                          type: string
- *                          example: "Bohorquez"  
- *                       SegundoApellido:
+ *                          example: ""  
+ *                       SecondLastName:
  *                          type: string
- *                          example: "Rodriguez"  
- *                       Direccion:
+ *                          example: ""  
+ *                       Adress:
  *                          type: string
- *                          example: "Carrera 17 # 71 - 07"   
- *                       Correo:
+ *                          example: "CRA 19 16-58 Bucaramanga"   
+ *                       Email:
  *                          type: string
- *                          example: "esteban@gmail.com"   
- *                       Celular:
+ *                          example: "clientesyproovedorescotaxi@gmail.com"   
+ *                       PhoneNumber:
  *                          type: string
- *                          example: "3026660606"   
- *                   infoProducto:
+ *                          example: "3021234567"   
+ *                   ProductInformation:
  *                     type: object
  *                     properties:
- *                       IdProduct:
+ *                       ProductId:
  *                          type: integer
- *                          example: 1
- *                       Cantidad:
- *                          type: numeric
- *                          example: 1
- *                       Precio:
- *                          type: numeric
- *                          example: 10000  
- *                       Descuento:
- *                          type: numeric
+ *                          example: 4
+ *                       Quantity:
+ *                          type: float
+ *                          example: 74.670
+ *                       Price:
+ *                          type: float
+ *                          example: 8900.000  
+ *                       Discunt:
+ *                          type: float
+ *                          format: float
  *                          example: 0   
  *                       Iva:
- *                          type: numeric
+ *                          type: float
+ *                          format: float                          
  *                          example: 0  
  *                       Subtotal:
- *                          type: numeric
- *                          example: 10000  
+ *                          type: float
+ *                          format: float
+ *                          example: 664563  
  *                       Total:
- *                          type: numeric
- *                          example: 10000 
- *                   infoPago:
+ *                          type: float
+ *                          example: 664563 
+ *                   PaymentInformation:
  *                     type: object
  *                     properties:
- *                       FormaPago:
+ *                       PaymentFormId:
  *                          type: integer
- *                          example: 123
- *                       MedioPago:
- *                          type: string
- *                          example: "2024-01-01"
- *                       TipoTarjeta:
- *                          type: string
- *                          example: "2024-01-01"  
- *                       NroTransaccion:
+ *                          example: 1  
+ *                       PaymentMethodId:
+ *                          type: integer
+ *                          example: 1  
+ *                       CardId:
+ *                          type: integer
+ *                          example: 1  
+ *                       TransaccionNumber:
  *                          type: number
- *                          format: float
- *                          example: 59.99
+ *                          example: 100
  *     responses:
  *       200:
- *         description: Listados encontrados
+ *         description: Factura Generada
  *       404:
- *         description: Listados no encontrados
+ *         description: No se encontro informacion
  *       500:
- *         description: Error en el servicio
+ *         description: Error en la generacion de la factura
  */
 
 router.post('/outputs', [
@@ -175,48 +201,48 @@ router.post('/outputs', [
     // Iniciar una transacción
     const transaction = await sequelize.transaction();
     try {        
-
-        //
-        const { infoFacturaVenta } = datosEntrada;            
-        const { infoFacturaVenta: { infoTercero: datosTercero } } = datosEntrada;
-        const { infoFacturaVenta: { infoProducto: datosProducto } } = datosEntrada;
-        const { infoGeneral } = datosEntrada;
+        
+        const { InvoiceInformation, UserInformation } = datosEntrada;            
+        const { InvoiceInformation: { ProductInformation: datosProducto, VehicleInformation: datosVehiculo, PaymentInformation : datosPago, InvoiceHolderInformation: datosTercero, StationInformation: datosEstacion } } = datosEntrada;
 
         // Verificar si el usuario existe
         let idUsuario = 0;
 
-        if (!infoGeneral.IdentificacionUsuario) {
+        if (!UserInformation.UserIdent) {
             return res.status(400).json({ error: 'Identificacion del usuario Incompleta' });
         }
-        if (!infoGeneral.ContraseñaUsuario) {
+        if (!UserInformation.UserPassword) {
             return res.status(400).json({ error: 'Contraseña del usuario Incompleta' });
         }
         const usuarioActivo = await Usuario.findOne({
             where: {
                 activo: true,
-                nro_cedula: infoGeneral.IdentificacionUsuario
+                nro_cedula: UserInformation.UserIdent
             }
         });
 
         if (!usuarioActivo) {
-            return res.status(404).json({ error: `Credenciales invalidas` });
+            return res.status(401).json({ error: `Credenciales invalidas` });
         }  
         
-        const isValidPasswd = await UtilController.passwordValidate(infoGeneral.ContraseñaUsuario, usuarioActivo.password);
+        const isValidPasswd = await UtilController.passwordValidate(UserInformation.UserPassword, usuarioActivo.password);
         if (!isValidPasswd) {
             return res.status(401).json({ error: 'Contraseña incorrecta' });
         }
         
         idUsuario = usuarioActivo.id;
         
-        if (!infoFacturaVenta) {
-            return res.status(400).json({ error: 'Campos de la Factura obligatorios sin enviar' });
+        if (!InvoiceInformation) {
+            return res.status(400).json({ error: 'Campos de la Factura obligatorios' });
         }
         if (!datosTercero) {
-            return res.status(400).json({ error: 'Campos del Tercero obligatorios sin enviar' });
+            return res.status(400).json({ error: 'Campos del Tercero obligatorios' });
         }
         if (!datosProducto) {
-            return res.status(400).json({ error: 'Campos del Producto obligatorios sin enviar' });
+            return res.status(400).json({ error: 'Campos del Producto obligatorios' });
+        }
+        if (!datosPago) {
+            return res.status(400).json({ error: 'Campos del Pago obligatorios' });
         }
         
         const fecNow = new Date();
@@ -229,7 +255,7 @@ router.post('/outputs', [
         const seconds = String(fecNow.getSeconds()).padStart(2, '0');  // Segundos
         const dbDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;        
 
-        if (!infoGeneral.IdSucursal) {
+        if (!UserInformation.SucursalId) {
             return res.status(400).json({ error: 'Debe enviar la sucursal' });
         }
         
@@ -237,37 +263,74 @@ router.post('/outputs', [
             where: {
                 id_est_registro: 1,
                 id_tipo_sucursal: 7,
-                id_sucursal: infoGeneral.IdSucursal,
+                id_sucursal: UserInformation.SucursalId,
             }
         });
 
         if (!sucursal) {
             return res.status(404).json({ error: `Sucursal invalida, consulte los listados` });
-        }
-        const idSucursal = sucursal.id_sucursal;
+        }        
+        
+        const idSucursal = sucursal.id;
         let idPersona = 0;
 
 
         // ## Fill Person Object Initiation 
         const personData = await PersonController.fillPerson(datosTercero,idUsuario,dbDate);                
-        // ## Validate Person Information and Structure Initiation 
         const validatePerson = await PersonController.validatePerson(personData);        
-        // ## Create or Modify Person Initiation with transaction
         const currentPerson = await PersonController.managePerson(personData,idUsuario,dbDate,transaction);
         idPersona = currentPerson.id;       
         
-        
-        // ## Fill Product Object Initiation 
+        // ## Product
         const productData = await ProductController.fillProduct(datosProducto); 
-        // ## Validate Person Information and Structure Initiation 
-        const validateProduct = await ProductController.validateProduct(productData);      
+        const validateProduct = await ProductController.validateProduct(productData); 
         
-        await transaction.rollback();                
-        //await transaction.commit();
+        // ## Vehicle   
+        let vehicleData;
+        let validateVehicle;
+        let currentVehicle;
+        
+        if(datosVehiculo){
+            vehicleData = await VehicleController.fillVehicle(datosVehiculo); 
+            validateVehicle = await VehicleController.validateVehicle(vehicleData);      
+            objVehicle = await VehicleController.manageVehicle(vehicleData, idPersona, idUsuario, transaction);         
+        }
+        //Payment
+        const paymentData = await PaymentController.fillPayment(datosPago); 
+        const validatePayment = await PaymentController.validatePayment(paymentData); 
+        const currentPayment = await PaymentController.getPayment(paymentData);         
+        
+        // Reservar ID para la tabla principal
+        const [inventoryOutputsIdSeq] = await sequelize.query(
+            "SELECT nextval('almacen.inventory_outputs_id_seq') AS id", // Cambia por el nombre correcto de tu secuencia
+            { transaction }
+        );
+        const outputId = await inventoryOutputsIdSeq[0].id;  
+        // Credit
+        let creditData;
+        if(currentPayment.currentPaymentForm.id === 3){
+            creditData = await CreditController.fillCredit(currentPerson,productData,objVehicle,InvoiceInformation, currentPayment, outputId, idSucursal, idUsuario);             
+            //validar
+            //currentCredit --- exception si no lo trae
+        }
+        // SalidaDeInventario
+        const outputData = await OutputController.fillOutput(currentPerson,productData,objVehicle,InvoiceInformation, currentPayment, outputId, idSucursal, idUsuario, creditData,datosEstacion); 
+        const validateOutput = await OutputController.validateOutput(outputData); 
+        const currentOutput = await OutputController.createOutput(outputData, idPersona, idUsuario, transaction); 
 
-        return res.status(200).json({ message: 'Factura generada exitosamente', productData });
+        if (!transaction.finished) {
+            await transaction.rollback();
+        }
+        
+        return res.status(200).json({ message: 'Factura generada exitosamente', currentOutput });
+        // const creditData = await CreditController.Credit(datosProducto); 
+        
+        // await transaction.commit();
+
     } catch (error) {
-        await transaction.rollback();
+        if (!transaction.finished) {
+            await transaction.rollback();
+        }        
         if(error.message){
             return res.status(500).json({ error: 'Se ha presentado un problema', message : error.message  });            
         }

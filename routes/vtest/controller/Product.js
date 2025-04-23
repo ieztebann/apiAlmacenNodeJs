@@ -8,11 +8,11 @@ const { Product, ProductDetails } = require('../../../models'); // Importa tus m
  * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
  * @returns {Promise<Object>} - Retorna el objeto Persona creado o actualizado.
  */
-const getProduct = async (idProduct) => {
+const getProduct = async (ProductId) => {
     try {
         const currentProductDetail = await ProductDetails.findOne({
             where: {
-                id: idProduct
+                id: ProductId
             },
             attributes: ['id'] 
         });
@@ -31,36 +31,29 @@ const getProduct = async (idProduct) => {
  * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
  * @returns {Promise<Object>} - Retorna el objeto Product creado o actualizado.
  */
-const fillProduct = async (datosProducto) => {    
+const fillProduct = async (datosProducto) => {
     let product;
-    if(datosProducto.IdProduct ){
-        product = await getProduct(datosProducto.IdProduct);            
-    }           
+    if(datosProducto.ProductId ){
+        product = await getProduct(datosProducto.ProductId);            
+    }
+    
     try {    
         const productData = {
-            product_detail_id: datosProducto.IdProduct ? product.id : null,
-            cantidad: datosProducto.Cantidad ? (datosProducto.Cantidad) : null,
-            valor_unitario: datosProducto.Precio ? (datosProducto.Precio) : null, 
+            product_detail_id: datosProducto.ProductId ? product.id : null,
+            cantidad: datosProducto.Quantity ? (datosProducto.Quantity) : null,
+            valor_unitario: datosProducto.Price ? (datosProducto.Price) : null, 
             valor_total: datosProducto.Total ? (datosProducto.Total) : null,
             valor_neto: datosProducto.Subtotal ? (datosProducto.Subtotal) : null,
-            valor_descuento: datosProducto.Descuento ? (datosProducto.Descuento) : 0.00,
+            valor_descuento: datosProducto.Discunt ? (datosProducto.Discunt) : 0.00,
             valor_impuesto: datosProducto.Iva ? (datosProducto.Iva) : 0.00,
-            valor_venta: datosProducto.Precio ? (datosProducto.Precio) : null,
+            valor_venta: datosProducto.Price ? (datosProducto.Price) : null,
             iva_descontable: 0.00,                        
-            valor_compra: datosProducto.Precio ? (datosProducto.Precio) : null,
+            valor_compra: datosProducto.Price ? (datosProducto.Price) : null,
             valor_descuento_sin_imp: 0.00,
             valor_descuento_con_imp: 0,
             porcentaje_descuento: 0,
             total_impuesto: datosProducto.Iva ? (datosProducto.Iva) : 0.00,
-            valor_venta_product: datosProducto.Precio ? (datosProducto.Precio) : null
-            /*,//
-            total_utilidad: datosProducto.IdProduct,//*
-            valor_utilidad_product: datosProducto.IdProduct,//*
-            total_compra: datosProducto.IdProduct,//*            
-            valor_compra_product: datosProducto.IdProduct,//*            
-            porcentaje_utilidad_product: datosProducto.IdProduct,//*            
-            tarifa_iva: datosProducto.Correo ? datosProducto.Correo.trim() : null,//*        
-            iva_rate_id: datosProducto.IdProduct//* */
+            valor_venta_product: datosProducto.Price ? (datosProducto.Price) : null
         };
         return productData;
     } catch (error) {
@@ -80,7 +73,7 @@ const validateProduct = async (datosProducto) => {
         const regexEmail = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;  
         const regexThreeDecimals = /^\d+(\.\d{1,3})?$/;
             
-        /* IdProduct */
+        /* ProductId */
         if (!datosProducto.product_detail_id) {
             throw new Error('Debe completar el identificador del producto.');                                                                                                                    
         }      
@@ -128,4 +121,5 @@ const validateProduct = async (datosProducto) => {
         throw new Error(error);
     }
 };
+
 module.exports = { fillProduct, validateProduct };
