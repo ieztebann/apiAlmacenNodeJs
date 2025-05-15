@@ -16,6 +16,16 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             field: 'payment_form_inventory_id'
         },
+        paymentMethodInventoryId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: 'payment_methods_inventory_id'
+        },
+        paymentMeanInventoryId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: 'payment_means_inventory_id'
+        },
         inventoryTypeBillingId: {
             type: DataTypes.INTEGER,
             allowNull: true,
@@ -38,6 +48,14 @@ module.exports = (sequelize, DataTypes) => {
         numero: {
             type: DataTypes.STRING(20),
             field: 'numero'
+        },
+        prefijoResolucion: {
+            type: DataTypes.STRING(20),
+            field: 'prefijo_resolucion'
+        },
+        numeroResolucion: {
+            type: DataTypes.STRING(20),
+            field: 'nro_resolucion'
         },
         idPersona: {
             type: DataTypes.INTEGER,

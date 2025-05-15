@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { Product, ProductDetails } = require('../../../models'); // Importa tus modelos de Sequelize
+const sequelize = require('../../../config/database');
 
 /**
  * Función para gestionar una persona, crea o actualiza registros en la base de datos.
@@ -24,6 +25,59 @@ const getProduct = async (ProductId) => {
         throw new Error('Error al consultar el producto. ('+error+')');
     }
 };
+const getProductValues = async (idSucursal, productId) => {
+    try {
+        // Llamada a la función PostgreSQL
+        const query = `
+            SELECT * FROM almacen.pl_get_valor_producto_x_sucursal(:idSucursal, :productId, '0') 
+            AS (
+                valor_costo text,
+                porcentaje_utilidad text,
+                valor_utilidad text,
+                id_iva_compra text,
+                id_iva_venta text,
+                porcentaje_iva_compra text,
+                porcentaje_iva_venta text,
+                valor_iva_compra text,
+                valor_iva_venta text,
+                valor_venta text,
+                utility_type_id text,
+                valor_venta_uni_product_incl_iva text
+            );
+        `;
+
+        const [result] = await sequelize.query(query, {
+            replacements: {
+                idSucursal: idSucursal,
+                productId: productId
+            },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        if (!result) {
+            throw new Error('No se encontro valores del producto.');            
+        }
+        return {
+            valor_costo: result.valor_costo,
+            porcentaje_utilidad: result.porcentaje_utilidad,
+            valor_utilidad: result.valor_utilidad,
+            id_iva_compra: result.id_iva_compra,
+            id_iva_venta: result.id_iva_venta,
+            porcentaje_iva_compra: result.porcentaje_iva_compra,
+            porcentaje_iva_venta: result.porcentaje_iva_venta,
+            valor_iva_compra: result.valor_iva_compra,
+            valor_iva_venta: result.valor_iva_venta,
+            valor_venta: result.valor_venta,
+            utility_type_id: result.utility_type_id,
+            valor_venta_uni_product_incl_iva: result.valor_venta_uni_product_incl_iva,
+        };
+
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error al consultar el producto. ('+error+')');
+    }
+};
+
 /**
  * Función para gestionar una producta, crea o actualiza registros en la base de datos.
  * @param {Object} productData - Datos de la producta a crear o actualizar.
@@ -31,29 +85,62 @@ const getProduct = async (ProductId) => {
  * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
  * @returns {Promise<Object>} - Retorna el objeto Product creado o actualizado.
  */
-const fillProduct = async (datosProducto) => {
+const fillProduct = async (datosProducto,idSucursal) => {
     let product;
+    let valorVentaProc = 0;
+    let valorUtilidad = 0;
+    let valorCompraProc = 0;
+    let cantidad = 0;
+    let totalCompraProc = 0;
+    let valorNeto = 0;
+    let porcentajeImpuesto = 0;
+    let idIva = 0;
+
     if(datosProducto.ProductId ){
         product = await getProduct(datosProducto.ProductId);            
+        productValues = await getProductValues(idSucursal,product.id);    
+
+        cantidad = datosProducto.Quantity ? (datosProducto.Quantity) : null;
+        valorVentaProc = productValues.valor_venta;
+        valorUtilidad = productValues.valor_utilidad;
+        valorCompraProc = productValues.valor_costo;
+        totalCompraProc = valorCompraProc * cantidad;
+        valorNeto = valorVentaProc * cantidad;
+        porcentajeImpuesto = productValues.porcentaje_iva_compra;
+        idIva = productValues.id_iva_compra;
+        valorImpU = (valorVentaProc * porcentajeImpuesto) / 100;
+        valorTotal = valorNeto + valorImpU;
+        valorImpuestoP = valorImpU * cantidad;
+        valorImpComp = productValues.valor_iva_venta;
+        ivaDescontable = valorImpU - valorImpComp;
+        totalImpuestoU = (valorVentaProc * porcentajeImpuesto) / 100;
+
     }
     
     try {    
         const productData = {
-            product_detail_id: datosProducto.ProductId ? product.id : null,
-            cantidad: datosProducto.Quantity ? (datosProducto.Quantity) : null,
-            valor_unitario: datosProducto.Price ? (datosProducto.Price) : null, 
-            valor_total: datosProducto.Total ? (datosProducto.Total) : null,
-            valor_neto: datosProducto.Subtotal ? (datosProducto.Subtotal) : null,
-            valor_descuento: datosProducto.Discunt ? (datosProducto.Discunt) : 0.00,
-            valor_impuesto: datosProducto.Iva ? (datosProducto.Iva) : 0.00,
-            valor_venta: datosProducto.Price ? (datosProducto.Price) : null,
-            iva_descontable: 0.00,                        
-            valor_compra: datosProducto.Price ? (datosProducto.Price) : null,
-            valor_descuento_sin_imp: 0.00,
-            valor_descuento_con_imp: 0,
-            porcentaje_descuento: 0,
-            total_impuesto: datosProducto.Iva ? (datosProducto.Iva) : 0.00,
-            valor_venta_product: datosProducto.Price ? (datosProducto.Price) : null
+            productDetailId: datosProducto.ProductId ? product.id : null,//listo
+            cantidad: datosProducto.Quantity ? (datosProducto.Quantity) : null,//listo
+            valorTotal: valorTotal ? (valorTotal) : null,//listo
+            valorDescuento: datosProducto.Discunt ? (datosProducto.Discunt) : 0.00,//listo
+            valorImpuesto: valorImpuestoP ? (valorImpuestoP) : 0.00,//listo
+            tarifaIva: porcentajeImpuesto ? (porcentajeImpuesto) : 0.00,//listo
+            ivaDescontable: ivaDescontable ? (ivaDescontable) : 0.00,//listo
+            ivaRateId: idIva ? (idIva) : null,//listo
+            valorNeto: valorNeto ? (valorNeto) : null,//listo
+            valorUnitario: valorVentaProc ? (valorVentaProc) : null,//listo 
+            valorCompra: valorCompraProc ? (valorCompraProc) : null,//listo
+            valorCompraProduct: valorCompraProc ? (valorCompraProc) : null,//listo
+            totalCompra: valorCompraProc && datosProducto.Quantity ? (valorCompraProc * datosProducto.Quantity) : null,//listo
+            valorUtilidadProduct: valorUtilidad ? (valorUtilidad) : null,//listo
+            totalUtilidad: valorUtilidad && datosProducto.Quantity ? (valorUtilidad * datosProducto.Quantity) : null,//listo
+            valorVenta: valorVentaProc ? (valorVentaProc) : null,//listo
+            valorVentaProduct: valorVentaProc ? (valorVentaProc) : null,//listo
+            valorDescuentoSinImp: 0.00,
+            valorDescuentoConImp: 0,
+            porcentajeDescuento: 0,
+            porcentajeUtilidadProduct: 0,
+            totalImpuesto: totalImpuestoU ? (totalImpuestoU) : 0.00
         };
         return productData;
     } catch (error) {
@@ -72,12 +159,11 @@ const validateProduct = async (datosProducto) => {
         const regexNumeric = /^[0-9]+$/;
         const regexEmail = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;  
         const regexThreeDecimals = /^\d+(\.\d{1,3})?$/;
-            
         /* ProductId */
-        if (!datosProducto.product_detail_id) {
+        if (!datosProducto.productDetailId) {
             throw new Error('Debe completar el identificador del producto.');                                                                                                                    
         }      
-        if (!regexNumeric.test(datosProducto.product_detail_id)) {
+        if (!regexNumeric.test(datosProducto.productDetailId)) {
             throw new Error('El identificador no es valido.');                                                                                                                    
         }         
         /* Cantidad */
@@ -88,32 +174,32 @@ const validateProduct = async (datosProducto) => {
             throw new Error('La cantidad no es valida.');                                                                                                                    
         }         
         /* Precio */ 
-        if (!datosProducto.valor_unitario) {
+        if (!datosProducto.valorUnitario) {
             throw new Error('Debe completar el Precio del producto.');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.valor_unitario)) {
+        if (!regexThreeDecimals.test(datosProducto.valorUnitario)) {
             throw new Error('El Precio no es valido.');                                                                                                                    
         }         
         /* Descuento */ 
-        if (!regexThreeDecimals.test(datosProducto.valor_descuento)) {
+        if (!regexThreeDecimals.test(datosProducto.valorDescuento)) {
             throw new Error('El Descuento no es valido.');                                                                                                                    
         }         
         /* Iva */  
-        if (!regexThreeDecimals.test(datosProducto.valor_impuesto)) {
+        if (!regexThreeDecimals.test(datosProducto.valorImpuesto)) {
             throw new Error('El Iva no es valido.');                                                                                                                    
         }             
         /* Subtotal */ 
-        if (!datosProducto.valor_neto) {
+        if (!datosProducto.valorNeto) {
             throw new Error('Debe completar el Subtotal del producto.');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.valor_neto)) {
+        if (!regexThreeDecimals.test(datosProducto.valorNeto)) {
             throw new Error('El Subtotal no es valido.');                                                                                                                    
         }                    
         /* Total */ 
-        if (!datosProducto.valor_total) {
+        if (!datosProducto.valorTotal) {
             throw new Error('Debe completar el Total del producto.');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.valor_total)) {
+        if (!regexThreeDecimals.test(datosProducto.valorTotal)) {
             throw new Error('El Total no es valido.');                                                                                                                    
         }           
         return true;

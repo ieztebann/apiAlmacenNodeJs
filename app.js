@@ -20,10 +20,10 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: process.env.HTTPS_API+'/almacen/api/vtest',
+                url: process.env.HTTPS_API+'/almacen/api/v1',
             },
             {
-                url: process.env.HTTPS_API+'/almacen/api/v1',
+                url: process.env.HTTPS_API+'/almacen/api/vtest',
             },
         ],
     },

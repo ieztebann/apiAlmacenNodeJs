@@ -4,6 +4,7 @@ const sequelize = new Sequelize(process.env.PG_DATABASE, process.env.PG_USER, pr
   host: process.env.PG_HOST,
   port: process.env.PG_PORT || 5432,
   logging: console.log, // Habilita logs de Sequelize
+  //logging: false, // deshabilita logs de Sequelize
   dialect: 'postgres',  // Define que usarás PostgreSQL
 });
 

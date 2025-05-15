@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             field: 'id_concepto_comprobante',
         },
+        idSucursal: {
+            type: DataTypes.INTEGER,
+            field: 'id_sucursal',
+        },
         idPeriodoAplicaCredito: {
             type: DataTypes.INTEGER,
             field: 'id_periodo_aplica_credito',
@@ -82,6 +86,18 @@ module.exports = (sequelize, DataTypes) => {
         idUsuarioCre: {
             type: DataTypes.INTEGER,
             field: 'id_usuario_cre',
+        },
+        idEspecifico: {
+            type: DataTypes.INTEGER,
+            field: 'id_especifico',
+        },
+        outputInventoryId: {
+            type: DataTypes.INTEGER,
+            field: 'output_inventory_id',
+        },
+        nroEspecifico: {
+            type: DataTypes.INTEGER,
+            field: 'nro_especifico',
         },
         fecCre: {
             type: DataTypes.DATE,

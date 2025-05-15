@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { ProductDetails, EmpresaSistema, Output } = require('../../../models'); // Importa tus modelos de Sequelize
+const { ProductDetails, EmpresaSistema, Output, OutputInventoryDetail } = require('../../../models'); // Importa tus modelos de Sequelize
 const { getEmpresaSistema } = require('./EmpresaSistema');
 const { fillCredit } = require('./Credit');
 /**
@@ -9,7 +9,7 @@ const { fillCredit } = require('./Credit');
  * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
  * @returns {Promise<Object>} - Retorna el objeto Product creado o actualizado.
  */
-const fillOutput = async (currentPerson,productData,objVehicle,InvoiceInformation, currentPayment, outputId, idSucursal, idUsuario, creditData,datosEstacion) => {
+const fillOutput = async (currentPerson,productData,objVehicle,InvoiceInformation, currentPayment, outputId, idSucursal, idUsuario,datosEstacion) => {
     let product;
     const id_empresa_operadora = await getEmpresaSistema();
     if(currentPerson.ProductId ){
@@ -20,43 +20,43 @@ const fillOutput = async (currentPerson,productData,objVehicle,InvoiceInformatio
     try {
         const OutputData = {
             id: outputId,
-            output_inventory_type_id: 1,
-            payment_form_inventory_id: currentPayment.currentPaymentForm.id ? currentPayment.currentPaymentForm.id : null, 
-            inventory_output_state_id: 2,
-            inventory_type_billing_id: currentPayment.currentPaymentForm.id === 3 ? 4 : 3,
-            id_persona: currentPerson.id ? currentPerson.id : null,
+            outputInventoryTypeId: 1,
+            paymentFormInventoryId: currentPayment.currentPaymentForm.id ? currentPayment.currentPaymentForm.id : null, 
+            paymentMethodInventoryId: currentPayment.currentPaymentMethod.id ? currentPayment.currentPaymentMethod.id : null, 
+            paymentMeanInventoryId: currentPayment.currentPaymentMean.id ? currentPayment.currentPaymentMean.id : null, 
+            inventoryOutputStateId: 2,
+            inventoryTypeBillingId: 3,
+            idPersona: currentPerson.id ? currentPerson.id : null,
             observacion: InvoiceInformation.Details ? InvoiceInformation.Details : null,
-            dispenser_number: InvoiceInformation.PosConsecutive ? InvoiceInformation.PosConsecutive : null,
-            prefijo: InvoiceInformation.PosPrefix ? InvoiceInformation.PosPrefix : null,
-            kilometros_veh: objVehicle && objVehicle.currentFormVehicle && objVehicle.currentFormVehicle && objVehicle.currentFormVehicle.Mileage ? objVehicle.currentFormVehicle.Mileage : null,
-            fecha_ultimo_mantenimiento: objVehicle && objVehicle.currentFormVehicle && objVehicle.currentFormVehicle.LastMaintenanceDate ? objVehicle.currentFormVehicle.LastMaintenanceDate : null,
+            dispenserNumber: InvoiceInformation.PosConsecutive ? InvoiceInformation.PosConsecutive : null,
+            kilometrosVeh: objVehicle && objVehicle.currentFormVehicle && objVehicle.currentFormVehicle && objVehicle.currentFormVehicle.Mileage ? objVehicle.currentFormVehicle.Mileage : null,//sin funcionamiento temporal
             surtidor: datosEstacion && datosEstacion.Dispenser ? datosEstacion.Dispenser : null,
             isla: datosEstacion && datosEstacion.Island ? datosEstacion.Island : null,
             manguera: datosEstacion && datosEstacion.Hose ? datosEstacion.Hose : null,
-            nro_cruce: InvoiceInformation.PosConsecutive ? InvoiceInformation.PosConsecutive : null,
-            prefijo_cruce: InvoiceInformation.PosPrefix ? InvoiceInformation.PosPrefix : null,
-            external_vehicle_id: objVehicle && objVehicle.currentExternalVehicle && objVehicle.currentExternalVehicle && objVehicle.currentExternalVehicle.id ? objVehicle.currentExternalVehicle.id : null,
-            id_vehiculo: objVehicle && objVehicle.currentVehicle && objVehicle.currentVehicle && objVehicle.currentVehicle.id ? objVehicle.currentVehicle.id : null,
-            fecha_cobro: InvoiceInformation.InvoiceDate ? `${InvoiceInformation.InvoiceDate} ${currentTime}` : null,
-            fec_mov: InvoiceInformation.InvoiceDate ? `${InvoiceInformation.InvoiceDate} ${currentTime}` : null,
-            id_tarjeta_banco: currentPayment.id_tarjeta_banco ? currentPayment.id_tarjeta_banco : null,
-            nro_transaccion: currentPayment.nro_transaccion ? currentPerson.nro_transaccion : null,            
-            valor_total: productData.valor_total ? productData.valor_total : null,
-            valor_neto: productData.valor_neto ? productData.valor_neto : null,
-            valor_impuesto: productData.valor_impuesto ? productData.valor_impuesto : null,
-            valor_descuento: productData.valor_descuento ? productData.valor_descuento : null,
-            valor_abono: 0,
-            saldo_actual: productData.valor_total ? productData.valor_total : null,
-            valor_neto_sin_imp: productData.valor_neto ? productData.valor_neto : null,
-            porcentaje_descuento: 0,
-            valor_descuento_sin_imp: productData.valor_impuesto > 0 ? 0 : productData.valor_descuento,
-            valor_descuento_con_imp: productData.valor_impuesto > 0 ? productData.valor_descuento : 0,
-            total_impuesto: productData.valor_impuesto ? productData.valor_impuesto : 0,
-            valor_credito: currentPayment.currentPaymentForm.id === 3 ? (productData.valor_total ? productData.valor_total : null) : 0,
-            id_sucursal: idSucursal ? idSucursal : null,
-            id_usuario_cre: idUsuario ? idUsuario : null,
-            software_externo: true,
-            id_empresa_operadora: id_empresa_operadora.idPersona ? (id_empresa_operadora.idPersona) : null
+            nroCruce: InvoiceInformation.PosConsecutive ? InvoiceInformation.PosConsecutive : null,
+            prefijoCruce: InvoiceInformation.PosPrefix ? InvoiceInformation.PosPrefix : null,
+            externalVehicleId: objVehicle && objVehicle.currentExternalVehicle && objVehicle.currentExternalVehicle && objVehicle.currentExternalVehicle.id ? objVehicle.currentExternalVehicle.id : null,
+            idVehiculo: objVehicle && objVehicle.currentVehicle && objVehicle.currentVehicle && objVehicle.currentVehicle.id ? objVehicle.currentVehicle.id : null,
+            fechaCobro: InvoiceInformation.InvoiceDate ? `${InvoiceInformation.InvoiceDate} ${currentTime}` : null,
+            fecMov: InvoiceInformation.InvoiceDate ? `${InvoiceInformation.InvoiceDate} ${currentTime}` : null,
+            idTarjetaBanco: currentPayment.id_tarjeta_banco ? currentPayment.id_tarjeta_banco : null,
+            nroTransaccion: currentPayment.nro_transaccion ? currentPerson.nro_transaccion : null,            
+            valorTotal: productData.valor_total ? productData.valor_total : 0.00,
+            valorNeto: 0 ? 0 : 0.00, //no habian registros ni uso de esta funcion
+            valorImpuesto: 0 ? 0 : 0.00, //no habian registros ni uso de esta funcion
+            valorDescuento: productData.valor_descuento ? productData.valor_descuento : 0.00,
+            valorAbono: 0,
+            saldoActual: productData.valor_total ? productData.valor_total : 0.00,
+            valorNetoSinImp: productData.valor_neto ? productData.valor_neto : 0.00,
+            porcentajeDescuento: 0,
+            valorDescuentoSinImp: productData.valor_impuesto > 0 ? 0 : productData.valor_descuento,
+            valorDescuentoConImp: productData.valor_impuesto > 0 ? productData.valor_descuento : 0,
+            totalImpuesto: productData.valor_impuesto ? productData.valor_impuesto : 0,
+            valorCredito: currentPayment.currentPaymentForm.id === 3 ? (productData.valor_total ? productData.valor_total : null) : 0,
+            idSucursal: idSucursal ? idSucursal : null,
+            idUsuarioCre: idUsuario ? idUsuario : null,
+            softwareExterno: true,
+            idEmpresaOperadora: id_empresa_operadora.idPersona ? (id_empresa_operadora.idPersona) : null
         };
         return OutputData;
     } catch (error) {
@@ -86,57 +86,59 @@ const validateOutput = async (datosCredito) => {
             throw new Error('El identificador no es valido.');
         }
         /* Type */
-        if (!datosCredito.output_inventory_type_id) {
+        if (!datosCredito.outputInventoryTypeId) {
             throw new Error('Tipo de Identificador de la factura se generó incorrectamente.');
         }
-        if (!regexNumeric.test(datosCredito.output_inventory_type_id)) {
+        if (!regexNumeric.test(datosCredito.outputInventoryTypeId)) {
             throw new Error('El tipo de identificador no es valido.');
         }
         /* Type */
-        if (!datosCredito.payment_form_inventory_id) {
-            throw new Error('Tipo de Identificador de la factura se generó incorrectamente.');
+        if (!datosCredito.paymentFormInventoryId) {
+            throw new Error('Forma de pago de la factura se generó incorrectamente.');
         }
-        if (!regexNumeric.test(datosCredito.payment_form_inventory_id)) {
+        if (!datosCredito.paymentMethodInventoryId) {
+            throw new Error('Metodo de pago de la factura se generó incorrectamente.');
+        }
+        if (!datosCredito.paymentMeanInventoryId) {
+            throw new Error('Medio de pago de la factura se generó incorrectamente.');
+        }
+        if (!regexNumeric.test(datosCredito.paymentFormInventoryId)) {
             throw new Error('El tipo de identificador no es valido.');
         }
         /* Precio */ 
-        if (!datosCredito.inventory_output_state_id) {
+        if (!datosCredito.inventoryOutputStateId) {
             throw new Error('Estado invalido de la factura.');
         }
-        if (!regexNumeric.test(datosCredito.inventory_output_state_id)) {
+        if (!regexNumeric.test(datosCredito.inventoryOutputStateId)) {
             throw new Error('El Precio no es valido.');
         }
         /* Precio */ 
-        if (!datosCredito.inventory_type_billing_id) {
+        if (!datosCredito.inventoryTypeBillingId) {
             throw new Error('El tipo de facturacion no es valido.');
         }
-        if (!regexNumeric.test(datosCredito.inventory_type_billing_id)) {
+        if (!regexNumeric.test(datosCredito.inventoryTypeBillingId)) {
             throw new Error('El tipo de facturacion no es valido.');
         }
         /* Precio */ 
-        if (!datosCredito.id_persona) {
+        if (!datosCredito.idPersona) {
             throw new Error('La persona no es valida.');
         }
-        if (!regexNumeric.test(datosCredito.id_persona)) {
+        if (!regexNumeric.test(datosCredito.idPersona)) {
             throw new Error('La persona no es valida.');
         }
         /* Precio */ 
-        if (!datosCredito.id_empresa_operadora) {
+        if (!datosCredito.idEmpresaOperadora) {
             throw new Error('La persona no es valida.');
         }
-        if (!regexNumeric.test(datosCredito.id_empresa_operadora)) {
+        if (!regexNumeric.test(datosCredito.idEmpresaOperadora)) {
             throw new Error('La empresa operadora no es valida.');
         }
         /* Precio */ 
         if (!datosCredito.observacion) {
             throw new Error('Debe completar la observacion de la factura.');
         }
-        /* Precio */ 
-        if (!datosCredito.prefijo) {
-            throw new Error('Debe completar el prefijo pos de la factura.');
-        }
         /*Precio*/
-        if (!datosCredito.fecha_cobro) {
+        if (!datosCredito.fechaCobro) {
             throw new Error('Debe completar la fecha de la factura.');
         }
         return true;
@@ -147,14 +149,14 @@ const validateOutput = async (datosCredito) => {
 
 /**
  * Función para gestionar una persona, crea o actualiza registros en la base de datos.
- * @param {Object} outputData - Datos de la persona a crear o actualizar.
+ * @param {Object} outputData - Datos de la factura a crear o actualizar.
  * @param {number} idUsuario - ID del usuario que realiza la operación.
  * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
  * @returns {Promise<Object>} - Retorna el objeto Persona creado o actualizado.
  */
 const createOutput = async (outputData, idUsuario, dbDate, transaction) => {
     try {
-        outputData.id_usuario_cre = idUsuario;
+        outputData.idUsuarioCre = idUsuario;
         outputData.createdAt = dbDate;
         updatedPerson = await Output.create(outputData,{ transaction });
         return updatedPerson;
@@ -162,4 +164,16 @@ const createOutput = async (outputData, idUsuario, dbDate, transaction) => {
         throw new Error('Error al gestionar la factura. ('+error+')');
     }
 };
-module.exports = { fillOutput, validateOutput, createOutput };
+const createOutputDetail = async (outputDetailData, idUsuario, dbDate, transaction, outputId) => {
+    try {
+        outputDetailData.idUsuarioCre = idUsuario;
+        outputDetailData.createdAt = dbDate;
+        outputDetailData.outputInventoryId = outputId;
+        console.log(outputDetailData);
+        updatedPerson = await OutputInventoryDetail.create(outputDetailData,{ transaction });
+        return updatedPerson;        
+    } catch (error) {
+        throw new Error('Error al gestionar la factura. ('+error+')');
+    }
+};
+module.exports = { fillOutput, validateOutput, createOutput, createOutputDetail };

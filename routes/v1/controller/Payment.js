@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { PaymentFormInventories } = require('../../../models'); // Importa tus modelos de Sequelize
+const { PaymentFormInventories, PaymentMethodInventories, PaymentMeanInventories} = require('../../../models'); // Importa tus modelos de Sequelize
 /**
  * Función para gestionar una producta, crea o actualiza registros en la base de datos.
  * @param {Object} productData - Datos de la producta a crear o actualizar.
@@ -12,6 +12,7 @@ const fillPayment = async (PaymentInformation) => {
         const productData = {
             payment_form_inventory_id: PaymentInformation.PaymentFormId ? PaymentInformation.PaymentFormId : null,
             payment_method_inventory_id: PaymentInformation.PaymentMethodId ? PaymentInformation.PaymentMethodId : null,
+            payment_mean_inventory_id: PaymentInformation.PaymentMeanId ? PaymentInformation.PaymentMeanId : null,
             id_tarjeta_banco: PaymentInformation.CardId ? PaymentInformation.CardId : null,
             nro_transaccion: PaymentInformation.TransaccionNumber ? PaymentInformation.TransaccionNumber : null
         };
@@ -36,13 +37,15 @@ const validatePayment = async (paymentData) => {
         if (!regexNumeric.test(paymentData.payment_form_inventory_id)) {
             throw new Error('La forma de pago es invalida.');                                                                                                                   
         }
+        if (!regexNumeric.test(paymentData.payment_method_inventory_id)) {
+            throw new Error('El metodo de pago es invalida.');                                                                                                                   
+        }        
+        if (!regexNumeric.test(paymentData.payment_mean_inventory_id)) {
+            throw new Error('La forma de pago es invalida.');                                                                                                                   
+        }
         /* payment_method_inventory_id */        
         if (!paymentData.payment_method_inventory_id) {       
-            throw new Error('Debe completar el medio de pago.');                                                                                                                                
-        }
-        if (!regexNumeric.test(paymentData.payment_method_inventory_id)) {
-            throw new Error('El medio de pago es invalida.');                                                                                                                   
-            
+            throw new Error('Debe completar el medio de pago.');                                                                                                                                        
         }  
         return true;
     } catch (error) {
@@ -66,8 +69,27 @@ const getPayment = async (paymentData) => {
         if(!currentPaymentForm){
             throw new Error('Forma de pago invalida');            
         }
+        const currentPaymentMethod = await PaymentMethodInventories.findOne({
+            where: {
+                payment_form_inventory_id: currentPaymentForm.id,
+                id: paymentData.payment_method_inventory_id
+            }
+        });
+        if(!currentPaymentMethod){
+            throw new Error('Forma de pago invalida, o Metodo de pago invalido');            
+        }
 
-        return {currentPaymentForm:currentPaymentForm};
+        const currentPaymentMean = await PaymentMeanInventories.findOne({
+            where: {
+                payment_method_inventory_id: currentPaymentMethod.id,
+                id: paymentData.payment_mean_inventory_id
+            }
+        });
+        if(!currentPaymentMean){
+            throw new Error('Metodo de pago invalida, o medio de pago invalido');            
+        }        
+
+        return {currentPaymentForm:currentPaymentForm, currentPaymentMethod:currentPaymentMethod, currentPaymentMean:currentPaymentMean};
     } catch (error) {
         throw new Error('Error al encontrar informacion de pago. ('+error+')');
     }

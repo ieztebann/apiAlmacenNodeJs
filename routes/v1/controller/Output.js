@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { ProductDetails, EmpresaSistema, Output } = require('../../../models'); // Importa tus modelos de Sequelize
+const { ProductDetails, EmpresaSistema, Output, OutputInventoryDetail } = require('../../../models'); // Importa tus modelos de Sequelize
 const { getEmpresaSistema } = require('./EmpresaSistema');
 const { fillCredit } = require('./Credit');
 /**
@@ -9,7 +9,7 @@ const { fillCredit } = require('./Credit');
  * @param {string} dbDate - Fecha formateada actual en formato "YYYY-MM-DD HH:mm:ss".
  * @returns {Promise<Object>} - Retorna el objeto Product creado o actualizado.
  */
-const fillOutput = async (currentPerson,productData,objVehicle,InvoiceInformation, currentPayment, outputId, idSucursal, idUsuario, creditData,datosEstacion) => {
+const fillOutput = async (currentPerson,productData,objVehicle,InvoiceInformation, currentPayment, outputId, idSucursal, idUsuario,datosEstacion) => {
     let product;
     const id_empresa_operadora = await getEmpresaSistema();
     if(currentPerson.ProductId ){
@@ -17,18 +17,20 @@ const fillOutput = async (currentPerson,productData,objVehicle,InvoiceInformatio
     }
     const now = new Date();
     const currentTime = now.toTimeString().split(' ')[0]; // 'HH:mm:ss'
+    
     try {
         const OutputData = {
             id: outputId,
             outputInventoryTypeId: 1,
             paymentFormInventoryId: currentPayment.currentPaymentForm.id ? currentPayment.currentPaymentForm.id : null, 
+            paymentMethodInventoryId: currentPayment.currentPaymentMethod.id ? currentPayment.currentPaymentMethod.id : null, 
+            paymentMeanInventoryId: currentPayment.currentPaymentMean.id ? currentPayment.currentPaymentMean.id : null, 
             inventoryOutputStateId: 2,
-            inventoryTypeBillingId: currentPayment.currentPaymentForm.id === 3 ? 4 : 3,
+            inventoryTypeBillingId: 3,
             idPersona: currentPerson.id ? currentPerson.id : null,
             observacion: InvoiceInformation.Details ? InvoiceInformation.Details : null,
             dispenserNumber: InvoiceInformation.PosConsecutive ? InvoiceInformation.PosConsecutive : null,
-            prefijo: InvoiceInformation.PosPrefix ? InvoiceInformation.PosPrefix : null,
-            kilometros_veh: objVehicle && objVehicle.currentFormVehicle && objVehicle.currentFormVehicle && objVehicle.currentFormVehicle.Mileage ? objVehicle.currentFormVehicle.Mileage : null,
+            kilometrosVeh: objVehicle && objVehicle.currentFormVehicle && objVehicle.currentFormVehicle && objVehicle.currentFormVehicle.Mileage ? objVehicle.currentFormVehicle.Mileage : null,//sin funcionamiento temporal
             surtidor: datosEstacion && datosEstacion.Dispenser ? datosEstacion.Dispenser : null,
             isla: datosEstacion && datosEstacion.Island ? datosEstacion.Island : null,
             manguera: datosEstacion && datosEstacion.Hose ? datosEstacion.Hose : null,
@@ -93,7 +95,13 @@ const validateOutput = async (datosCredito) => {
         }
         /* Type */
         if (!datosCredito.paymentFormInventoryId) {
-            throw new Error('Tipo de Identificador de la factura se generó incorrectamente.');
+            throw new Error('Forma de pago de la factura se generó incorrectamente.');
+        }
+        if (!datosCredito.paymentMethodInventoryId) {
+            throw new Error('Metodo de pago de la factura se generó incorrectamente.');
+        }
+        if (!datosCredito.paymentMeanInventoryId) {
+            throw new Error('Medio de pago de la factura se generó incorrectamente.');
         }
         if (!regexNumeric.test(datosCredito.paymentFormInventoryId)) {
             throw new Error('El tipo de identificador no es valido.');
@@ -130,10 +138,6 @@ const validateOutput = async (datosCredito) => {
         if (!datosCredito.observacion) {
             throw new Error('Debe completar la observacion de la factura.');
         }
-        /* Precio */ 
-        if (!datosCredito.prefijo) {
-            throw new Error('Debe completar el prefijo pos de la factura.');
-        }
         /*Precio*/
         if (!datosCredito.fechaCobro) {
             throw new Error('Debe completar la fecha de la factura.');
@@ -155,12 +159,22 @@ const createOutput = async (outputData, idUsuario, dbDate, transaction) => {
     try {
         outputData.idUsuarioCre = idUsuario;
         outputData.createdAt = dbDate;
-        console.log(outputData);
-
         updatedPerson = await Output.create(outputData,{ transaction });
         return updatedPerson;
     } catch (error) {
         throw new Error('Error al gestionar la factura. ('+error+')');
     }
 };
-module.exports = { fillOutput, validateOutput, createOutput };
+const createOutputDetail = async (outputDetailData, idUsuario, dbDate, transaction, outputId) => {
+    try {
+        outputDetailData.idUsuarioCre = idUsuario;
+        outputDetailData.createdAt = dbDate;
+        outputDetailData.outputInventoryId = outputId;
+        console.log(outputDetailData);
+        updatedPerson = await OutputInventoryDetail.create(outputDetailData,{ transaction });
+        return updatedPerson;        
+    } catch (error) {
+        throw new Error('Error al gestionar la factura. ('+error+')');
+    }
+};
+module.exports = { fillOutput, validateOutput, createOutput, createOutputDetail };

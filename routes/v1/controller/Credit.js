@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { Credit } = require('../../../models'); // Importa tus modelos de Sequelize
+const { Credito } = require('../../../models'); // Importa tus modelos de Sequelize
 const { getEmpresaSistema } = require('./EmpresaSistema');
 
 /**
@@ -12,30 +12,31 @@ const { getEmpresaSistema } = require('./EmpresaSistema');
 const fillCredit = async (currentPerson,productData,objVehicle,InvoiceInformation, currentPayment, outputId, idSucursal, idUsuario) => {
     const now = new Date();
     const currentTime = now.toTimeString().split(' ')[0]; // 'HH:mm:ss'       
-    const id_empresa_operadora = await getEmpresaSistema();    
+    const id_empresa_operadora = await getEmpresaSistema();
     try {    
         const CreditData = {
-            id_forma_aplica_seguro: 1,//porcentaje
-            tarifa_seguro: 0,
-            id_persona: currentPerson.id ? (currentPerson.id) : null, 
-            id_concepto_comprobante: objVehicle && objVehicle.currentVehicle && objVehicle.currentVehicle.id ? (1052) : 1156,
-            id_empresa_operadora: id_empresa_operadora.idPersona ? (id_empresa_operadora.idPersona) : null,
-            fec_desembolso: InvoiceInformation.InvoiceDate ? `${InvoiceInformation.InvoiceDate} ${currentTime}` : null,
-            fec_primera_cuota: InvoiceInformation.InvoiceDate ? (InvoiceInformation.InvoiceDate) : null,
+            idFormaAplicaSeguro: 1,//porcentaje
+            tarifaSeguro: 0,
+            idPersona: currentPerson.id ? (currentPerson.id) : null, 
+            idConceptoComprobante: objVehicle && objVehicle.currentVehicle && objVehicle.currentVehicle.id ? (1052) : 1156,
+            idEmpresaOperadora: id_empresa_operadora.idPersona ? (id_empresa_operadora.idPersona) : null,
+            fecDesembolso: InvoiceInformation.InvoiceDate ? `${InvoiceInformation.InvoiceDate} 00:00:00` : null,
+            fecPrimeraCuota: InvoiceInformation.InvoiceDate ? (InvoiceInformation.InvoiceDate) : null,
             monto: currentPayment.currentPaymentForm.id === 3 ? productData.valor_total : 0,                        
-            saldo_actual: currentPayment.currentPaymentForm.id === 3 ? productData.valor_total : 0,
-            cant_cuotas: 1,
-            tasa_interes: 0,
-            tasa_interes_mora: 0,
-            id_periodo_aplica_credito: 1,
-            id_forma_pago_credito: 4,
-            id_sucursal: idSucursal ? idSucursal : null,
-            id_usuario_cre: idUsuario ? idUsuario : null,
-            id_especifico: outputId ? outputId : null,
-            output_inventory_id: outputId ? outputId : null,
-            nro_especifico: InvoiceInformation.PosConsecutive ? InvoiceInformation.PosConsecutive : null,
-            id_vehiculo: objVehicle && objVehicle.currentVehicle && objVehicle.currentVehicle.id ? objVehicle.currentVehicle.id : null
+            saldoActual: currentPayment.currentPaymentForm.id === 3 ? productData.valor_total : 0,
+            cantCuotas: 1,
+            tasaInteres: 0,
+            tasaInteresMora: 0,
+            idPeriodoAplicaCredito: 1,
+            idFormaPagoCredito: 4,
+            idSucursal: idSucursal ? idSucursal : null,
+            idUsuarioCre: idUsuario ? idUsuario : null,
+            idEspecifico: outputId ? outputId : null,
+            outputInventoryId: outputId ? outputId : null,
+            nroEspecifico: InvoiceInformation.PosConsecutive ? InvoiceInformation.PosConsecutive : null,
+            idVehiculo: objVehicle && objVehicle.currentVehicle && objVehicle.currentVehicle.id ? objVehicle.currentVehicle.id : null
         };
+        console.log(CreditData);
         return CreditData;
     } catch (error) {
         throw new Error('Error al llenar la informacion del credito.'+error);
@@ -46,7 +47,7 @@ const fillCredit = async (currentPerson,productData,objVehicle,InvoiceInformatio
  * @param {Object} outputData - Datos de la persona a validar.
  * @returns {Promise<boolean>} - Retorna `true` si es valido, `false` de lo contrario.
  */
-const validateCredit = async (outputData) => {
+const validateCredit = async (creditData) => {
     try {
         /* Validation With Regex */
         const regexLetters = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;;
@@ -54,53 +55,46 @@ const validateCredit = async (outputData) => {
         const regexEmail = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;  
         const regexThreeDecimals = /^\d+(\.\d{1,3})?$/;
             
-        /* CreditId */
-        if (!outputData.product_detail_id) {
-            throw new Error('Debe completar el identificador del producto.');                                                                                                                    
-        }      
-        if (!regexNumeric.test(outputData.product_detail_id)) {
-            throw new Error('El identificador no es valido.');                                                                                                                    
-        }         
+        /* id_forma_aplica_seguro */
+        if (!creditData.idFormaAplicaSeguro) {
+            throw new Error('Forma de aplica credito.');                                                                                                                    
+        }     
+        /* fec_desembolso */
+        if (!creditData.fecDesembolso) {
+            throw new Error('fecHA Desembolso credito.');                                                                                                                    
+        }     
+        /* fec_primera_cuota */
+        if (!creditData.fecPrimeraCuota) {
+            throw new Error('fecPrimeraCuota credito.');                                                                                                                    
+        }       
         /* Cantidad */
-        if (!outputData.cantidad) {
-            throw new Error('Debe completar la cantidad del producto.');                                                                                                                    
+        if (!creditData.idPersona) {
+            throw new Error('Debe completar la persona del credito.');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(outputData.cantidad)) {
-            throw new Error('La cantidad no es valida.');                                                                                                                    
-        }         
-        /* Precio */ 
-        if (!outputData.valor_unitario) {
-            throw new Error('Debe completar el Precio del producto.');                                                                                                                    
-        }      
-        if (!regexThreeDecimals.test(outputData.valor_unitario)) {
-            throw new Error('El Precio no es valido.');                                                                                                                    
-        }         
-        /* Descuento */ 
-        if (!regexThreeDecimals.test(outputData.valor_descuento)) {
-            throw new Error('El Descuento no es valido.');                                                                                                                    
-        }         
-        /* Iva */  
-        if (!regexThreeDecimals.test(outputData.valor_impuesto)) {
-            throw new Error('El Iva no es valido.');                                                                                                                    
-        }             
-        /* Subtotal */ 
-        if (!outputData.valor_neto) {
-            throw new Error('Debe completar el Subtotal del producto.');                                                                                                                    
-        }      
-        if (!regexThreeDecimals.test(outputData.valor_neto)) {
-            throw new Error('El Subtotal no es valido.');                                                                                                                    
-        }                    
-        /* Total */ 
-        if (!outputData.valor_total) {
-            throw new Error('Debe completar el Total del producto.');                                                                                                                    
-        }      
-        if (!regexThreeDecimals.test(outputData.valor_total)) {
-            throw new Error('El Total no es valido.');                                                                                                                    
-        }           
+        if (!regexNumeric.test(creditData.idPersona)) {
+            throw new Error('La persona no es valida.');                                                                                                                    
+        }               
+        /* saldo_actual */ 
+        if (!creditData.saldoActual) {
+            throw new Error('Debe completar el saldo_actual del producto.');                                                                                                                    
+        }                 
+        /* monto */ 
+        if (!creditData.monto) {
+            throw new Error('Debe completar el monto del producto.');                                                                                                                    
+        }     
         return true;
     } catch (error) {
         throw new Error(error);
     }
 };
-
-module.exports = { fillCredit, validateCredit };
+const createCredit = async (creditData, idUsuario, dbDate, transaction) => {
+    try {
+        creditData.idUsuarioCre = idUsuario;
+        creditData.createdAt = dbDate;
+        createdCredit = await Credito.create(creditData,{ transaction });
+        return createdCredit;
+    } catch (error) {
+        throw new Error('Error al gestionar la factura. ('+error+')');
+    }
+};
+module.exports = { fillCredit, validateCredit, createCredit };
