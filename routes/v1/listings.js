@@ -85,8 +85,9 @@ router.get('/listings', async (req, res) => {
         });
 
         if (products.length > 0) {
-            response.products = products.map(product => ({
+            response.productss = products.map(product => ({
                 id: product.id,
+                reference: product.cod_product,
                 name: product.name
             }));
         }

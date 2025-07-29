@@ -62,7 +62,7 @@ const fillPerson = async (datosTercero, idUsuario, dbDate) => {
             primer_apellido: datosTercero.FirstLastName ? datosTercero.FirstLastName.toUpperCase() : null,
             segundo_apellido: datosTercero.SecondLastName ? datosTercero.SecondLastName.toUpperCase() : null,
             dir: datosTercero.Adress ? datosTercero.Adress.toUpperCase() : null,
-            celular: datosTercero.PhoneNumber ? datosTercero.PhoneNumber : null,
+            celular: datosTercero.PhoneNumber ? datosTercero.PhoneNumber : 3000000000,
             tel_fijo: null,
             e_mail: datosTercero.Email ? datosTercero.Email.trim() : null,
             id_usuario_mod: idUsuario,

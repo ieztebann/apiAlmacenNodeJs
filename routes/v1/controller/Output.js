@@ -111,7 +111,7 @@ const validateOutput = async (datosCredito) => {
             throw new Error('Estado invalido de la factura.');
         }
         if (!regexNumeric.test(datosCredito.inventoryOutputStateId)) {
-            throw new Error('El Precio no es valido.');
+            throw new Error('El Estado de la factura debe ser numerico.');
         }
         /* Precio */ 
         if (!datosCredito.inventoryTypeBillingId) {

@@ -19,15 +19,15 @@ const manageVehicle = async (datosVehiculo, idPersona, idUsuario, transaction) =
             attributes: ['id'], 
             transaction 
         });
-        if (!currentVehicle) {
-            currentExternalVehicle = await ExternalVehicle.findOne({
-                where: {
-                    plate: datosVehiculo.plate
-                },
-                attributes: ['id'], 
-                transaction  
-            });
-        }
+
+        currentExternalVehicle = await ExternalVehicle.findOne({
+            where: {
+                plate: datosVehiculo.plate
+            },
+            attributes: ['id'], 
+            transaction  
+        });
+        
         if (!currentExternalVehicle) {
             currentExternalVehicle = await ExternalVehicle.create({"plate":datosVehiculo.plate,"idPersonaPropietario":idPersona,"idUsuarioCre":idUsuario, "observacion":"Vehiculo EDS Facturacion"},{ transaction });
         }

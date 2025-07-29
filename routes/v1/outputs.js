@@ -149,7 +149,7 @@ router.post('/output', [
                     generalProductData.valor_impuesto += productData.valorImpuesto;
                 } catch (error) {
                     return await safeResponse(res, transaction, 400, {
-                        error: `Error al procesar el producto: ${error.message}`,
+                        error: `Se presentó un problema al procesar el producto: ${error.message}`,
                     });                    
                 }
             }
@@ -187,7 +187,7 @@ router.post('/output', [
 
     } catch (error) {
         if(error.message){
-            return await safeResponse(res, transaction, 500, { error: 'Se ha presentado un problema.', message : error.message });
+            return await safeResponse(res, transaction, 409, { error: 'Se ha presentado un problema.', message : error.message });
         }
         return await safeResponse(res, transaction, 500, { error: 'Formato de datos no válido.', message : error });
     }
@@ -273,6 +273,12 @@ router.delete('/output', [
 
     } catch (error) {
         await transaction.rollback();
+        
+        if(error.original){
+            if(error.original.detail){
+                return await safeResponse(res, transaction, 500, { error: 'Se ha presentado un problema.', message : error.original.detail });
+            }
+        }
         return await safeResponse(res, transaction, 500, {
             error: 'Se ha presentado un problema.',
             message: error

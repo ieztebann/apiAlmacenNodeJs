@@ -106,6 +106,15 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
 *                         example: "125.40" 
 *                   InvoiceHolderInformation:
 *                     type: object
+*                     description: "Informacion de la factura"    
+*                     required:
+*                          - TypeId
+*                          - Id          
+*                          - Name              
+*                          - FirstLastName              
+*                          - SecondLastName              
+*                          - Adress              
+*                          - Email   
 *                     properties:
 *                       TypeId:
 *                         type: integer
@@ -143,10 +152,6 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
 *                           type: number
 *                           format: float
 *                           example: 74.670
-*                         Price:
-*                           type: number
-*                           format: float
-*                           example: 8900.000
 *                         Discunt:
 *                           type: number
 *                           format: float
@@ -171,7 +176,102 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
 *                         example: 100
  *     responses:
  *       200:
- *         description: Factura Generada
+ *         description: Factura generada exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: string
+ *                   example: "Factura generada exitosamente."
+ *                 message:
+ *                   type: object
+ *                   properties:
+ *                     currentOutput:
+ *                       type: object
+ *                       example:
+ *                         id: 1382220
+ *                         outputInventoryTypeId: 1
+ *                         paymentFormInventoryId: 3
+ *                         paymentMethodInventoryId: 3
+ *                         paymentMeanInventoryId: 3
+ *                         inventoryOutputStateId: 2
+ *                         inventoryTypeBillingId: 3
+ *                         idPersona: 1128508543
+ *                         observacion: "Placa: BOP461, Kilometraje : 0.00, Nro Transaccion : 123"
+ *                         dispenserNumber: "1234"
+ *                         kilometrosVeh: null
+ *                         surtidor: "hola"
+ *                         isla: "1"
+ *                         manguera: "1"
+ *                         nroCruce: "1234"
+ *                         prefijoCruce: null
+ *                         externalVehicleId: 81076
+ *                         idVehiculo: null
+ *                         fechaCobro: "2025-04-22T19:49:00.000Z"
+ *                         fecMov: "2025-04-22T19:49:00.000Z"
+ *                         idTarjetaBanco: null
+ *                         nroTransaccion: null
+ *                         valorTotal: "33483.5"
+ *                         valorNeto: "0"
+ *                         valorImpuesto: "0"
+ *                         valorDescuento: "0"
+ *                         valorAbono: "0"
+ *                         saldoActual: "33483.5"
+ *                         valorNetoSinImp: "33483.5"
+ *                         porcentajeDescuento: "0"
+ *                         valorDescuentoSinImp: "0.00"
+ *                         valorDescuentoConImp: "0.00"
+ *                         totalImpuesto: "0.00"
+ *                         valorCredito: "33483.5"
+ *                         idSucursal: 968
+ *                         idUsuarioCre: 395
+ *                         softwareExterno: true
+ *                         idEmpresaOperadora: 2
+ *                         createdAt: "2025-04-24T19:49:00.000Z"
+ *                         prefijo: "EDSI"
+ *                         numero: "277606"
+ *                         prefijoResolucion: "EDSI"
+ *                         numeroResolucion: "277606"
+ *                         resolucion: null
+ *                         idUsuarioMod: null
+ *                         updatedAt: null
+ *                         razonModificacion: null
+ *                     currentCredit:
+ *                       type: object
+ *                       example:
+ *                         idEstCreditoGenerado: 1
+ *                         fecCre: "2025-04-24T19:49:00.000Z"
+ *                         id: 143122
+ *                         idFormaAplicaSeguro: 1
+ *                         tarifaSeguro: "0.000"
+ *                         idPersona: 1128508543
+ *                         idConceptoComprobante: 1156
+ *                         idEmpresaOperadora: 2
+ *                         fecDesembolso: "2025-04-22T10:00:00.000Z"
+ *                         fecPrimeraCuota: "2025-04-22"
+ *                         monto: "33483.50"
+ *                         saldoActual: "33483.50"
+ *                         cantCuotas: "1"
+ *                         tasaInteres: "0.00"
+ *                         tasaInteresMora: "0"
+ *                         idPeriodoAplicaCredito: 1
+ *                         idFormaPagoCredito: 4
+ *                         idSucursal: 968
+ *                         idUsuarioCre: 395
+ *                         idEspecifico: 1382220
+ *                         outputInventoryId: 1382220
+ *                         nroEspecifico: "1234"
+ *                         idVehiculo: null
+ *                         diasMora: "0"
+ *                         arrCodeudores: null
+ *                         idUsuarioMod: null
+ *                         fecMod: null
+ *                         observacion: null
+ *                         nroPagare: null
+ *                         requierePagare: false
+ *                         razonModificacion: null
  *       404:
  *         description: No se encontro informacion
  *       500:
@@ -229,11 +329,67 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
  *                     nullable: false
  *     responses:
  *       200:
- *         description: Factura Generada
+ *         description: Factura Anulada con Éxito
+ *         content:
+ *           application/json:
+ *             example:
+ *               ok: "Factura Anulada con Exito"
+ *               updatedOutput:
+ *                 id: 1382270
+ *                 outputInventoryTypeId: 1
+ *                 paymentFormInventoryId: 3
+ *                 paymentMethodInventoryId: 3
+ *                 paymentMeanInventoryId: 3
+ *                 inventoryTypeBillingId: 3
+ *                 inventoryOutputStateId: 4
+ *                 idSucursal: 968
+ *                 prefijo: "EDSI"
+ *                 numero: "277624"
+ *                 prefijoResolucion: "EDSI"
+ *                 numeroResolucion: "277624"
+ *                 idPersona: 1128508543
+ *                 idVehiculo: null
+ *                 fecMov: "2025-04-22T20:10:11.000Z"
+ *                 fechaCobro: "2025-04-22T20:10:11.000Z"
+ *                 valorTotal: "33483.5"
+ *                 valorAbono: "0"
+ *                 valorDescuento: "0"
+ *                 totalImpuesto: "0.00"
+ *                 valorNeto: "0"
+ *                 valorImpuesto: "0"
+ *                 valorDescuentoSinImp: "0.00"
+ *                 valorDescuentoConImp: "0.00"
+ *                 saldoActual: "33483.5"
+ *                 observacion: "Placa: BOP461, Kilometraje : 0.00, Nro Transaccion : 123"
+ *                 resolucion: null
+ *                 idUsuarioCre: 395
+ *                 idUsuarioMod: 395
+ *                 createdAt: "2025-04-24T20:10:11.000Z"
+ *                 updatedAt: "2025-04-25T01:10:27.000Z"
+ *                 razonModificacion: "Prueba"
+ *                 idEmpresaOperadora: 2
+ *                 valorNetoSinImp: "33483.5"
+ *                 porcentajeDescuento: "0"
+ *                 idTarjetaBanco: null
+ *                 nroTransaccion: null
+ *                 softwareExterno: true
+ *                 externalVehicleId: 81076
+ *                 dispenserNumber: "1234"
+ *                 surtidor: "1"
+ *                 isla: "1"
+ *                 manguera: "1"
+ *                 nroCruce: "1234"
+ *                 prefijoCruce: null
+ *                 kilometrosVeh: null
+ *                 valorCredito: "33483.5"
  *       404:
  *         description: No se encontro informacion
  *       500:
- *         description: Error en la generacion de la factura
+ *         description: Error en la generación de la factura
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "La factura ya está anulada."
  * /output/{id}:
  *   post:
  *     summary: Obtener información de una Factura de Venta
@@ -275,14 +431,66 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
  *                     example: "pepitoperez123"
  *     responses:
  *       200:
- *         description: Información de la factura obtenida correctamente
- *       401:
- *         description: Credenciales inválidas
- *       404:
- *         description: Factura no encontrada o no pertenece al usuario
- *       500:
- *         description: Error interno del servidor
- */
+*         description: Información de la factura obtenida correctamente
+*         content:
+*           application/json:
+*             example:
+*               ok: true
+*               invoice:
+*                 id: 1382270
+*                 outputInventoryTypeId: 1
+*                 paymentFormInventoryId: 3
+*                 paymentMethodInventoryId: 3
+*                 paymentMeanInventoryId: 3
+*                 inventoryTypeBillingId: 3
+*                 inventoryOutputStateId: 4
+*                 idSucursal: 968
+*                 prefijo: "EDSI"
+*                 numero: "277624"
+*                 prefijoResolucion: "EDSI"
+*                 numeroResolucion: "277624"
+*                 idPersona: 1128508543
+*                 idVehiculo: null
+*                 fecMov: "2025-04-22T20:10:11.000Z"
+*                 fechaCobro: "2025-04-22T20:10:11.000Z"
+*                 valorTotal: "33483.5"
+*                 valorAbono: "0"
+*                 valorDescuento: "0"
+*                 totalImpuesto: "0.00"
+*                 valorNeto: "0"
+*                 valorImpuesto: "0"
+*                 valorDescuentoSinImp: "0.00"
+*                 valorDescuentoConImp: "0.00"
+*                 saldoActual: "33483.5"
+*                 observacion: "Placa: BOP461, Kilometraje : 0.00, Nro Transaccion : 123"
+*                 resolucion: null
+*                 idUsuarioCre: 395
+*                 idUsuarioMod: 395
+*                 createdAt: "2025-04-24T20:10:11.000Z"
+*                 updatedAt: "2025-04-25T01:10:27.000Z"
+*                 razonModificacion: "Prueba"
+*                 idEmpresaOperadora: 2
+*                 valorNetoSinImp: "33483.5"
+*                 porcentajeDescuento: "0"
+*                 idTarjetaBanco: null
+*                 nroTransaccion: null
+*                 softwareExterno: true
+*                 externalVehicleId: 81076
+*                 dispenserNumber: "1234"
+*                 surtidor: "1"
+*                 isla: "1"
+*                 manguera: "1"
+*                 nroCruce: "1234"
+*                 prefijoCruce: null
+*                 kilometrosVeh: null
+*                 valorCredito: "33483.5"
+*       401:
+*         description: Credenciales inválidas
+*       404:
+*         description: Factura no encontrada o no pertenece al usuario
+*       500:
+*         description: Error interno del servidor
+*/
 
 router.post('/output', [
     body().notEmpty().withMessage('Campos obligatorios sin enviar'),

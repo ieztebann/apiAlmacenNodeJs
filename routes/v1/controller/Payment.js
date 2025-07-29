@@ -39,9 +39,13 @@ const validatePayment = async (paymentData) => {
         }
         if (!regexNumeric.test(paymentData.payment_method_inventory_id)) {
             throw new Error('El metodo de pago es invalida.');                                                                                                                   
-        }        
+        }   
+        
+        if (!paymentData.payment_mean_inventory_id) {
+            throw new Error('Debe completar el medio de pago.');                                                                                                                    
+        }
         if (!regexNumeric.test(paymentData.payment_mean_inventory_id)) {
-            throw new Error('La forma de pago es invalida.');                                                                                                                   
+            throw new Error('El medio de pago es invalida.');                                                                                                                   
         }
         /* payment_method_inventory_id */        
         if (!paymentData.payment_method_inventory_id) {       

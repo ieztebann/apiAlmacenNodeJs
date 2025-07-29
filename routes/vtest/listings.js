@@ -11,12 +11,86 @@ const { ProductDetails, PaymentFormInventories,PaymentMethodInventories,PaymentM
  *     summary: Obtener Listados generales y referencias
  *     description: |
  *       Este endpoint permite obtener una lista de códigos generales disponibles en el sistema. 
- *       Es útil para consultar información categorizada que puede ser utilizada en diversas operaciones en los endpointss.
+ *       Es útil para consultar información categorizada que puede ser utilizada en diversas operaciones en los endpoints.
  *     tags:
  *       - Listados  
  *     responses:
  *       200:
- *         description: Listados encontrados
+ *         description: Listados encontrados (Esta informacion es ficticia, la informacion correcta esta al consumir el servicio)
+ *         content:
+ *           application/json:
+ *             example:
+ *               officeBranch:
+ *                 - id: 101
+ *                   name: ESTACION DE SERVICIO HUILA
+ *                 - id: 102
+ *                   name: ESTACION DE SERVICIO CARTAGENA
+ *                 - id: 103
+ *                   name: BODEGA MEDELLIN 1A
+ *                 - id: 104
+ *                   name: TIENDA CUCUTA 2B
+ *               bankCards:
+ *                 - id: 1
+ *                   name: VISA
+ *                 - id: 2
+ *                   name: DINNERS CLUB
+ *                 - id: 3
+ *                   name: AMERICAN EXPRESS
+ *                 - id: 4
+ *                   name: DEBITO
+ *                 - id: 5
+ *                   name: OTRAS TARJETAS
+ *               identificationTypes:
+ *                 - id: 3
+ *                   name: C.C
+ *                 - id: 5
+ *                   name: C.E
+ *                 - id: 6
+ *                   name: NIT
+ *                 - id: 7
+ *                   name: PASAPORTE
+ *               products:
+ *                 - id: 3
+ *                   name: GASOLINA CORRIENTE OXIGENADA
+ *                 - id: 4
+ *                   name: GASOLINA EXTRA
+ *                 - id: 6
+ *                   name: CELERITY 2T BIO ANTIHUMO 1/4
+ *                 - id: 7
+ *                   name: CELERITY 2T BIO ANTIHUMO PINTA
+ *               paymentForms:
+ *                 - id: 1
+ *                   name: CONTADO
+ *                   paymentMethods:
+ *                     - id: 1
+ *                       name: EFECTIVO
+ *                       paymentMeans:
+ *                         - id: 1
+ *                           name: EFECTIVO
+ *                     - id: 2
+ *                       name: TRANSFERENCIA ELECTRONICA
+ *                       paymentMeans:
+ *                         - id: 2
+ *                           name: DAVIPLATA
+ *                         - id: 5
+ *                           name: TARJETA CREDITO
+ *                         - id: 6
+ *                           name: QR
+ *                         - id: 7
+ *                           name: NEQUI
+ *                         - id: 8
+ *                           name: TARJETA DEBITO
+ *                 - id: 3
+ *                   name: CREDITO
+ *                   paymentMethods:
+ *                     - id: 3
+ *                       name: CREDITO
+ *                       paymentMeans:
+ *                         - id: 3
+ *                           name: CREDITO
+ *                 - id: 8
+ *                   name: PAGO MULTIPLE
+ *                   paymentMethods: []
  *       404:
  *         description: Listados no encontrados
  *       500:
@@ -87,6 +161,7 @@ router.get('/listings', async (req, res) => {
         if (products.length > 0) {
             response.products = products.map(product => ({
                 id: product.id,
+                cod_product: product.cod_product,
                 name: product.name
             }));
         }

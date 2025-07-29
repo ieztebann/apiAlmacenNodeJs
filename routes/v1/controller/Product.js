@@ -22,7 +22,7 @@ const getProduct = async (ProductId) => {
         }
         return currentProductDetail;
     } catch (error) {
-        throw new Error('Error al consultar el producto. ('+error+')');
+        throw new Error('Se presentó un problema al consultar el producto. ('+error+')');
     }
 };
 const getProductValues = async (idSucursal, productId) => {
@@ -74,7 +74,7 @@ const getProductValues = async (idSucursal, productId) => {
 
     } catch (error) {
         console.error(error);
-        throw new Error('Error al consultar el producto. ('+error+')');
+        throw new Error('Se presentó un problema al consultar el producto. ('+error+')');
     }
 };
 
@@ -128,7 +128,7 @@ const fillProduct = async (datosProducto,idSucursal) => {
             ivaDescontable: ivaDescontable ? (ivaDescontable) : 0.00,//listo
             ivaRateId: idIva ? (idIva) : null,//listo
             valorNeto: valorNeto ? (valorNeto) : null,//listo
-            valorUnitario: valorVentaProc ? (valorVentaProc) : null,//listo 
+            valorUnitario: valorVentaProc ? ( Number(parseFloat(valorVentaProc).toFixed(3))) : null,//listo 
             valorCompra: valorCompraProc ? (valorCompraProc) : null,//listo
             valorCompraProduct: valorCompraProc ? (valorCompraProc) : null,//listo
             totalCompra: valorCompraProc && datosProducto.Quantity ? (valorCompraProc * datosProducto.Quantity) : null,//listo
@@ -175,10 +175,11 @@ const validateProduct = async (datosProducto) => {
         }         
         /* Precio */ 
         if (!datosProducto.valorUnitario) {
-            throw new Error('Debe completar el Precio del producto.');                                                                                                                    
+            throw new Error('(Almacen) No hay Entrada de Inventario registrada, no existe precio para el Producto.');                                                                                                                    
         }      
         if (!regexThreeDecimals.test(datosProducto.valorUnitario)) {
-            throw new Error('El Precio no es valido.');                                                                                                                    
+            throw new Error('(Almacen) No hay Entrada de Inventario registrada, precio para el Producto invalido. '+datosProducto.valorUnitario);                                                                                                                    
+
         }         
         /* Descuento */ 
         if (!regexThreeDecimals.test(datosProducto.valorDescuento)) {
@@ -190,17 +191,17 @@ const validateProduct = async (datosProducto) => {
         }             
         /* Subtotal */ 
         if (!datosProducto.valorNeto) {
-            throw new Error('Debe completar el Subtotal del producto.');                                                                                                                    
+            throw new Error('No se encontró el valor Neto del producto (Verifique la configuracion del producto).');                                                                                                                    
         }      
         if (!regexThreeDecimals.test(datosProducto.valorNeto)) {
-            throw new Error('El Subtotal no es valido.');                                                                                                                    
+            throw new Error('El Valor Neto no es valido.');                                                                                                                    
         }                    
         /* Total */ 
         if (!datosProducto.valorTotal) {
-            throw new Error('Debe completar el Total del producto.');                                                                                                                    
+            throw new Error('No se encontró el valor Total del producto (Verifique la configuracion del producto).');                                                                                                                    
         }      
         if (!regexThreeDecimals.test(datosProducto.valorTotal)) {
-            throw new Error('El Total no es valido.');                                                                                                                    
+            throw new Error('El Valor Total no es valido.');                                                                                                                    
         }           
         return true;
     } catch (error) {
