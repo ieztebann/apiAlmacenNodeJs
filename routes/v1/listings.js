@@ -79,13 +79,19 @@ router.get('/listings', async (req, res) => {
         let filterProduct = datosEntrada && datosEntrada.filter_product || { apply_app: true };
 
         let products = await ProductDetails.findAll({
-            where: filterProduct,
+            where: {
+                [Op.and]: [
+                    { apply_app: true },
+                    { id_est_registro: 1 }
+                ]
+            },
+            
             order: [['id', 'ASC']],
             schema: 'almacen'
         });
 
         if (products.length > 0) {
-            response.productss = products.map(product => ({
+            response.products = products.map(product => ({
                 id: product.id,
                 reference: product.cod_product,
                 name: product.name

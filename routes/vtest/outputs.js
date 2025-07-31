@@ -142,6 +142,12 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
 *                         example: "3021234567"
 *                   ProductInformation:
 *                     type: array
+*                     required:
+*                          - ProductId
+*                          - Quantity
+*                          - Discunt
+*                          - Price
+*                          - TotalPrice
 *                     items:
 *                       type: object
 *                       properties:
@@ -151,11 +157,19 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
 *                         Quantity:
 *                           type: number
 *                           format: float
-*                           example: 74.670
+*                           example: 100.0001
 *                         Discunt:
 *                           type: number
 *                           format: float
-*                           example: 0
+*                           example: 100.0001
+*                         Price:
+*                           type: number
+*                           format: float
+*                           example: 100.0001
+*                         TotalPrice:
+*                           type: number
+*                           format: float
+*                           example: 100.0001
 *                   PaymentInformation:
 *                     type: object
 *                     properties:

@@ -101,34 +101,67 @@ const fillProduct = async (datosProducto,idSucursal) => {
         productValues = await getProductValues(idSucursal,product.id);    
 
         cantidad = datosProducto.Quantity ? (datosProducto.Quantity) : null;
-        valorVentaProc = productValues.valor_venta;
+        valorVentaProc = productValues.valor_venta_uni_product_incl_iva;
         valorUtilidad = productValues.valor_utilidad;
         valorCompraProc = productValues.valor_costo;
         totalCompraProc = valorCompraProc * cantidad;
-        valorNeto = valorVentaProc * cantidad;
+        valorNeto = Number(parseFloat(valorVentaProc * cantidad).toFixed(4));
         porcentajeImpuesto = productValues.porcentaje_iva_compra;
         idIva = productValues.id_iva_compra;
         valorImpU = (valorVentaProc * porcentajeImpuesto) / 100;
-        valorTotal = valorNeto + valorImpU;
+        valorTotal = Number(parseFloat(valorNeto + valorImpU).toFixed(4));
         valorImpuestoP = valorImpU * cantidad;
         valorImpComp = productValues.valor_iva_venta;
         ivaDescontable = valorImpU - valorImpComp;
         totalImpuestoU = (valorVentaProc * porcentajeImpuesto) / 100;
+        //throw new Error( JSON.stringify(productValues));
 
     }
-    
-    try {    
+    try {
+        //throw new Error( JSON.stringify(productData));
+
+        if(!( Number(parseFloat(valorVentaProc).toFixed(4)))){
+            throw new Error('(Almacen) No hay Entrada de Inventario registrada, no existe precio para el Producto registrado.');
+        }
+        
+        if(!datosProducto.Price){
+            throw new Error('El valor del producto es Obligatorio');
+        }
+        if(( Number(parseFloat(valorVentaProc).toFixed(4))) !== datosProducto.Price){
+            throw new Error('El valor de venta unitario ingresado no corresponde con el valor del almacen. Usted esta registrando $'+datosProducto.Price+' y el almacen tiene el valor de $'+( Number(parseFloat(valorVentaProc).toFixed(4))));
+        }
+        
+        if(!datosProducto.TotalPrice){
+            throw new Error('El valor Total del producto es Obligatorio');
+        }
+        
+        let a = datosProducto.TotalPrice;  // valor 1
+        let b = valorTotal;     // valor 2
+        let tolerancia = 0; // ±100 pesos - 0 = igual
+
+        // Diferencia en pesos
+        let diferencia = Math.abs(a - b);
+
+        // Para evitar pequeñísimos errores de coma flotante, redondeamos a 2 decimales (opcional)
+        diferencia = Math.round((diferencia + Number.EPSILON) * 100) / 100;
+
+        let esSimilar = diferencia <= tolerancia;
+        
+        if(!esSimilar){
+            throw new Error('El valor Total del producto ingresado no corresponde ni se aproxima con el valor del almacen. Usted esta registrando $'+a+' y el almacen tiene el valor de $'+b+' diferencia de: $'+diferencia);
+        }
+        
         const productData = {
             productDetailId: datosProducto.ProductId ? product.id : null,//listo
             cantidad: datosProducto.Quantity ? (datosProducto.Quantity) : null,//listo
-            valorTotal: valorTotal ? (valorTotal) : null,//listo
+            valorTotal: datosProducto.TotalPrice ? (datosProducto.TotalPrice) : null,//listo
             valorDescuento: datosProducto.Discunt ? (datosProducto.Discunt) : 0.00,//listo
             valorImpuesto: valorImpuestoP ? (valorImpuestoP) : 0.00,//listo
             tarifaIva: porcentajeImpuesto ? (porcentajeImpuesto) : 0.00,//listo
             ivaDescontable: ivaDescontable ? (ivaDescontable) : 0.00,//listo
             ivaRateId: idIva ? (idIva) : null,//listo
             valorNeto: valorNeto ? (valorNeto) : null,//listo
-            valorUnitario: valorVentaProc ? ( Number(parseFloat(valorVentaProc).toFixed(3))) : null,//listo 
+            valorUnitario: valorVentaProc ? ( Number(parseFloat(valorVentaProc).toFixed(4))) : null,//listo 
             valorCompra: valorCompraProc ? (valorCompraProc) : null,//listo
             valorCompraProduct: valorCompraProc ? (valorCompraProc) : null,//listo
             totalCompra: valorCompraProc && datosProducto.Quantity ? (valorCompraProc * datosProducto.Quantity) : null,//listo
@@ -142,9 +175,11 @@ const fillProduct = async (datosProducto,idSucursal) => {
             porcentajeUtilidadProduct: 0,
             totalImpuesto: totalImpuestoU ? (totalImpuestoU) : 0.00
         };
+        
         return productData;
+
     } catch (error) {
-        throw new Error('Error al llenar la informacion de la producto.'+error);
+        throw new Error('Error al completar la informacion del producto. '+error);
     }
 };
 /**
@@ -158,7 +193,7 @@ const validateProduct = async (datosProducto) => {
         const regexLetters = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;;
         const regexNumeric = /^[0-9]+$/;
         const regexEmail = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;  
-        const regexThreeDecimals = /^\d+(\.\d{1,3})?$/;
+        const regexFourDecimals = /^\d+(\.\d{1,4})?$/;
         /* ProductId */
         if (!datosProducto.productDetailId) {
             throw new Error('Debe completar el identificador del producto.');                                                                                                                    
@@ -170,37 +205,37 @@ const validateProduct = async (datosProducto) => {
         if (!datosProducto.cantidad) {
             throw new Error('Debe completar la cantidad del producto.');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.cantidad)) {
+        if (!regexFourDecimals.test(datosProducto.cantidad)) {
             throw new Error('La cantidad no es valida.');                                                                                                                    
         }         
         /* Precio */ 
         if (!datosProducto.valorUnitario) {
             throw new Error('(Almacen) No hay Entrada de Inventario registrada, no existe precio para el Producto.');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.valorUnitario)) {
+        if (!regexFourDecimals.test(datosProducto.valorUnitario)) {
             throw new Error('(Almacen) No hay Entrada de Inventario registrada, precio para el Producto invalido. '+datosProducto.valorUnitario);                                                                                                                    
 
         }         
         /* Descuento */ 
-        if (!regexThreeDecimals.test(datosProducto.valorDescuento)) {
+        if (!regexFourDecimals.test(datosProducto.valorDescuento)) {
             throw new Error('El Descuento no es valido.');                                                                                                                    
         }         
         /* Iva */  
-        if (!regexThreeDecimals.test(datosProducto.valorImpuesto)) {
+        if (!regexFourDecimals.test(datosProducto.valorImpuesto)) {
             throw new Error('El Iva no es valido.');                                                                                                                    
         }             
         /* Subtotal */ 
         if (!datosProducto.valorNeto) {
             throw new Error('No se encontró el valor Neto del producto (Verifique la configuracion del producto).');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.valorNeto)) {
+        if (!regexFourDecimals.test(datosProducto.valorNeto)) {
             throw new Error('El Valor Neto no es valido.');                                                                                                                    
         }                    
         /* Total */ 
         if (!datosProducto.valorTotal) {
             throw new Error('No se encontró el valor Total del producto (Verifique la configuracion del producto).');                                                                                                                    
         }      
-        if (!regexThreeDecimals.test(datosProducto.valorTotal)) {
+        if (!regexFourDecimals.test(datosProducto.valorTotal)) {
             throw new Error('El Valor Total no es valido.');                                                                                                                    
         }           
         return true;

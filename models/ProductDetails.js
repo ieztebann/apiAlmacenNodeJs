@@ -7,7 +7,9 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true,
         },
         name: {type : DataTypes.STRING, field: 'nombre'},
-        cod_product: {type : DataTypes.STRING, field: 'cod_product'}
+        cod_product: {type : DataTypes.STRING, field: 'cod_product'},
+        register_status_id: { type: DataTypes.INTEGER, field: 'id_est_registro'},
+
     }, {
         tableName: 'product_details',
         schema: 'almacen',

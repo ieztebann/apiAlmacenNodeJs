@@ -108,6 +108,7 @@ router.post('/output', [
                   
         // ## Vehicle   
         let vehicleData;
+        let objVehicle;
         let validateVehicle;
         let currentVehicle;
         
