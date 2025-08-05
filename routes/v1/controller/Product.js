@@ -86,26 +86,44 @@ const getProductValues = async (idSucursal, productId) => {
  * @returns {Promise<Object>} - Retorna el objeto Product creado o actualizado.
  */
 const fillProduct = async (datosProducto,idSucursal) => {
+    
+    if(!datosProducto.Price){
+        throw new Error('El valor del producto es Obligatorio');
+    }
+    
+    if(!datosProducto.TotalPrice){
+        throw new Error('El valor Total del producto es Obligatorio');
+    }
+    
     let product;
     let valorVentaProc = 0;
     let valorUtilidad = 0;
     let valorCompraProc = 0;
     let cantidad = 0;
-    let totalCompraProc = 0;
     let valorNeto = 0;
     let porcentajeImpuesto = 0;
     let idIva = 0;
 
+    
     if(datosProducto.ProductId ){
         product = await getProduct(datosProducto.ProductId);            
         productValues = await getProductValues(idSucursal,product.id);    
 
         cantidad = datosProducto.Quantity ? (datosProducto.Quantity) : null;
-        valorVentaProc = productValues.valor_venta_uni_product_incl_iva;
         valorUtilidad = productValues.valor_utilidad;
         valorCompraProc = productValues.valor_costo;
-        totalCompraProc = valorCompraProc * cantidad;
-        valorNeto = Number(parseFloat(valorVentaProc * cantidad).toFixed(4));
+        
+        if(!datosProducto.SkipAuditWarehouseValues){//flujo normal del almacen
+            valorVentaProc = Number(parseFloat(productValues.valor_venta_uni_product_incl_iva).toFixed(4))
+            valorNeto = Number(parseFloat(valorVentaProc * cantidad).toFixed(4));
+            
+        }else{// flujo evitando alertas del almacen por precio unitario y por valor neto
+            valorVentaProc = Number(parseFloat(datosProducto.Price).toFixed(4))
+            valorNeto = Number(parseFloat(datosProducto.TotalPrice).toFixed(4));
+            //Probablemente el valor neto si es de otra cosa que no sea gasolina toca calcularlo
+        }
+        
+        
         porcentajeImpuesto = productValues.porcentaje_iva_compra;
         idIva = productValues.id_iva_compra;
         valorImpU = (valorVentaProc * porcentajeImpuesto) / 100;
@@ -114,26 +132,19 @@ const fillProduct = async (datosProducto,idSucursal) => {
         valorImpComp = productValues.valor_iva_venta;
         ivaDescontable = valorImpU - valorImpComp;
         totalImpuestoU = (valorVentaProc * porcentajeImpuesto) / 100;
-        //throw new Error( JSON.stringify(productValues));
 
     }
     try {
         //throw new Error( JSON.stringify(productData));
 
-        if(!( Number(parseFloat(valorVentaProc).toFixed(4)))){
-            throw new Error('(Almacen) No hay Entrada de Inventario registrada, no existe precio para el Producto registrado.');
+        if(!valorVentaProc){
+            throw new Error('(Almacen) No hay Entrada de Inventario registrada, no registra precio para el Producto ingresado.');
         }
         
-        if(!datosProducto.Price){
-            throw new Error('El valor del producto es Obligatorio');
+        if (!datosProducto.SkipAuditWarehouseValues && Number(parseFloat(valorVentaProc).toFixed(4)) !== datosProducto.Price) {
+            throw new Error('El valor de venta unitarios ingresado no corresponde con el valor del almacen. Usted esta registrando $' + datosProducto.Price + ' y el almacen tiene el valor de $' + Number(parseFloat(valorVentaProc).toFixed(4)));
         }
-        if(( Number(parseFloat(valorVentaProc).toFixed(4))) !== datosProducto.Price){
-            throw new Error('El valor de venta unitario ingresado no corresponde con el valor del almacen. Usted esta registrando $'+datosProducto.Price+' y el almacen tiene el valor de $'+( Number(parseFloat(valorVentaProc).toFixed(4))));
-        }
-        
-        if(!datosProducto.TotalPrice){
-            throw new Error('El valor Total del producto es Obligatorio');
-        }
+
         
         let a = datosProducto.TotalPrice;  // valor 1
         let b = valorTotal;     // valor 2
@@ -147,7 +158,7 @@ const fillProduct = async (datosProducto,idSucursal) => {
 
         let esSimilar = diferencia <= tolerancia;
         
-        if(!esSimilar){
+        if(!datosProducto.SkipAuditWarehouseValues && !esSimilar){
             throw new Error('El valor Total del producto ingresado no corresponde ni se aproxima con el valor del almacen. Usted esta registrando $'+a+' y el almacen tiene el valor de $'+b+' diferencia de: $'+diferencia);
         }
         
@@ -173,8 +184,19 @@ const fillProduct = async (datosProducto,idSucursal) => {
             valorDescuentoConImp: 0,
             porcentajeDescuento: 0,
             porcentajeUtilidadProduct: 0,
-            totalImpuesto: totalImpuestoU ? (totalImpuestoU) : 0.00
-        };
+            totalImpuesto: totalImpuestoU ? (totalImpuestoU) : 0.00,
+            //api
+            valorUnitarioApi: datosProducto.SkipAuditWarehouseValues && datosProducto.Price ? ( Number(parseFloat(datosProducto.Price).toFixed(4))) : 0,//listo 
+            cantidadApi: datosProducto.SkipAuditWarehouseValues && datosProducto.Quantity ? ( Number(parseFloat(datosProducto.Quantity).toFixed(4))) : 0,//listo 
+            valorTotalApi: datosProducto.SkipAuditWarehouseValues && datosProducto.TotalPrice ? ( Number(parseFloat(datosProducto.TotalPrice).toFixed(4))) : 0
+            /*
+ALTER TABLE almacen.aud_inventory_outputs ADD COLUMN skip_audit_api boolean default false;
+ALTER TABLE almacen.inventory_outputs ADD COLUMN skip_audit_api boolean default false;
+ALTER TABLE almacen.output_inventory_details ADD COLUMN valor_unitario_api numeric(20,2) NOT NULL default 0;
+ALTER TABLE almacen.output_inventory_details ADD COLUMN cantidad_api numeric(20,2) NOT NULL default 0;
+ALTER TABLE almacen.output_inventory_details ADD COLUMN total_api numeric(20,2) NOT NULL default 0;
+            */
+        };  
         
         return productData;
 

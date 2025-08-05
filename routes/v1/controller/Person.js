@@ -21,7 +21,8 @@ const managePerson = async (personData, idUsuario, dbDate, transaction) => {
 
         if (currentPerson) {
             const idPersona = currentPerson.id;
-            const [affectedRows] = await Persona.update(personData, {
+
+            /*const [affectedRows] = await Persona.update(personData, {
                 where: {
                     id_persona: idPersona
                 }, transaction
@@ -33,7 +34,13 @@ const managePerson = async (personData, idUsuario, dbDate, transaction) => {
                         id_persona: idPersona
                     }, transaction
                 });
-            }
+            }*/
+            
+            updatedPerson = await Persona.findOne({
+                where: {
+                    id_persona: idPersona
+                }, transaction
+            });
         } else {
             personData.id_usuario_cre = idUsuario;
             personData.fec_cre = dbDate;
@@ -63,7 +70,7 @@ const fillPerson = async (datosTercero, idUsuario, dbDate) => {
             segundo_apellido: datosTercero.SecondLastName ? datosTercero.SecondLastName.toUpperCase() : null,
             dir: datosTercero.Adress ? datosTercero.Adress.toUpperCase() : null,
             celular: datosTercero.PhoneNumber ? datosTercero.PhoneNumber : 3000000000,
-            tel_fijo: null,
+            tel_fijo: datosTercero.LandlinePhoneNumber ? datosTercero.LandlinePhoneNumber : null,
             e_mail: datosTercero.Email ? datosTercero.Email.trim() : null,
             id_usuario_mod: idUsuario,
             fec_mod: dbDate
@@ -130,14 +137,7 @@ const validatePerson = async (personData) => {
             if (!regexLetters.test(personData.segundo_apellido)) {
                 throw new Error('El segundo apellido solo debe contener letras.');                                                                            
             }             
-        }         
-        /* Email */                
-        if (!personData.e_mail) {
-            throw new Error('Debe completar el correo electrónico.');                                                            
-        }
-        if (!regexEmail.test(personData.e_mail)) {
-            throw new Error('El correo no tiene un formato válido.');                                                
-        }        
+        }       
         /* Phone */                
         if (!personData.celular) {
             throw new Error('El celular del tercero es obligatorio.');                                    

@@ -139,7 +139,10 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
 *                         example: "clientesyproovedorescotaxi@gmail.com"   
 *                       PhoneNumber:
 *                         type: string
-*                         example: "3021234567"
+*                         example: "3021234567"   
+*                       LandlinePhoneNumber:
+*                         type: string
+*                         example: "6010923"
 *                   ProductInformation:
 *                     type: array
 *                     required:
@@ -148,6 +151,7 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
 *                          - Discunt
 *                          - Price
 *                          - TotalPrice
+*                          - SkipAuditWarehouseValues
 *                     items:
 *                       type: object
 *                       properties:
@@ -170,6 +174,10 @@ app.use(express.json()); // Asegúrate de tener este middleware para manejar JSO
 *                           type: number
 *                           format: float
 *                           example: 100.0001
+*                         SkipAuditWarehouseValues:
+*                           type: boolean
+*                           example: false
+*                           description: "si es true: omite las validaciones del almacen como el precio de venta y demas validaciones de auditoria y recibe tal cual lo que envia el api, si es false: genera auditoria del sistema"    
 *                   PaymentInformation:
 *                     type: object
 *                     properties:

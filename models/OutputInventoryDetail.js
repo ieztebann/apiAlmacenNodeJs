@@ -153,6 +153,21 @@ module.exports = (sequelize, DataTypes) => {
             field: 'valor_venta_uni_product_incl_iva',
             defaultValue: 0,
         },
+        valorUnitarioApi: {
+            type: DataTypes.DECIMAL(20, 2),
+            field: 'valor_unitario_api',
+            allowNull: false,
+        },
+        cantidadApi: {
+            type: DataTypes.DECIMAL(20, 2),
+            field: 'cantidad_api',
+            allowNull: false,
+        },
+        valorTotalApi: {
+            type: DataTypes.DECIMAL(20, 2),
+            field: 'total_api',
+            allowNull: false,
+        },
     }, {
         tableName: 'output_inventory_details',
         schema: 'almacen',

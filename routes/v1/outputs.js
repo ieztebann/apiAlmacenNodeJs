@@ -1,8 +1,9 @@
 const express = require('express');
+const axios = require('axios');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { Usuario, Persona, Sucursal, Output } = require('../../models'); // Importa tus modelos de Sequelize
-const { PersonController, UtilController, ProductController, OutputController, VehicleController, PaymentController, CreditController } = require('./controller');  // Importa la función de validación
+const { PersonController, UtilController, ProductController, OutputController, VehicleController, PaymentController, CreditController, EmpresaSistemaController } = require('./controller');  // Importa la función de validación
 const app = express();
 const sequelize = require('../../config/database');
 
@@ -81,7 +82,7 @@ router.post('/output', [
         const dbDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;        
 
         if (!UserInformation.SucursalId) {
-            return res.status(400).json({ error: 'Debe enviar la sucursal' });
+            return res.status(400).json({ error: 'Debe enviar la sucursal ' +dbDate });
         }
         
         const sucursal = await Sucursal.findOne({
@@ -128,9 +129,6 @@ router.post('/output', [
             { transaction }
         );
         const outputId = await inventoryOutputsIdSeq[0].id;  
-
-
-
         let generalProductData = {}; 
         let arrOutputDetails = []; 
         if (Array.isArray(datosProducto) && datosProducto.length > 0) {
@@ -140,6 +138,7 @@ router.post('/output', [
             generalProductData.valor_impuesto = 0;
 
             for (const producto of datosProducto) {
+
                 try {
                     const productData = await ProductController.fillProduct(producto,idSucursal);
                     const validateProduct = await ProductController.validateProduct(productData);
@@ -173,6 +172,8 @@ router.post('/output', [
                 });                    
             }
         }
+        
+    
         // Credit
         let creditData;
         let currentCredit;
@@ -181,8 +182,38 @@ router.post('/output', [
             const validateCredit = await CreditController.validateCredit(creditData); 
             currentCredit = await CreditController.createCredit(creditData, idUsuario, dbDate , transaction); 
         }
+        
+        
         await transaction.commit();
-        return res.status(200).json({ ok: 'Factura generada exitosamente.', message : {currentOutput:currentOutput, currentCredit:currentCredit} });
+        //await transaction.rollback();
+        
+        
+
+        const url = await EmpresaSistemaController.getUrlSilog();
+        const endpoint = `${url}/api/inventario/factura.php`;
+
+        let cufe = null;
+        let error_cufe = null;
+
+        try {
+            const response = await axios.post(endpoint, {
+                function_name: "send_dian",
+                parameter: { id: outputId }
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            cufe = (response.data )? response.data : null;
+        } catch (error) {
+            error_cufe = (error.message )? error.message :  'Error desconocido al enviar a DIAN.';
+        }
+
+
+
+        
+        return res.status(200).json({ ok: 'Factura generada exitosamente.', message : {currentOutput:currentOutput, currentCredit:currentCredit}, cufe: cufe, error_cufe : error_cufe });
 
         // const creditData = await CreditController.Credit(datosProducto); 
 
@@ -268,7 +299,7 @@ router.delete('/output', [
             where: { id: idFactura },
             transaction
         });
-
+        
         await transaction.commit();
         return res.status(200).json({ ok: 'Factura Anulada con Exito', updatedOutput: updatedOutput });
 
@@ -328,7 +359,7 @@ router.post('/output/:id', [
         });
 
         if (!invoice) {
-            return await safeResponse(res, transaction, 404, { error: 'Factura no encontrada o acceso denegado' });
+            return await safeResponse(res, transaction, 404, { ok: 'Factura no encontrada o acceso denegado' });
         }
 
         await transaction.commit();

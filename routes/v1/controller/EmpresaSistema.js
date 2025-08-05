@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { EmpresaSistema } = require('../../../models'); // Importa tus modelos de Sequelize
+const { EmpresaSistema, PrincipalModules } = require('../../../models'); // Importa tus modelos de Sequelize
 
 /**
  * Función para gestionar una persona, crea o actualiza registros en la base de datos.
@@ -25,4 +25,28 @@ const getEmpresaSistema = async () => {
         throw new Error('Error al encontrar informacion de pago. ('+error+')');
     }
 };
-module.exports = { getEmpresaSistema };
+
+const getUrlSilog = async () => {
+    try {
+        const currentSilogModule = await PrincipalModules.findOne({
+            where: { id: 1 },
+            attributes: ['url'],
+        });
+
+        if (!currentSilogModule || !currentSilogModule.url) {
+            throw new Error('Url no encontrada');
+        }
+
+        const urlString = String(currentSilogModule.url).trim();
+        console.log('URL original:', `[${urlString}]`);
+
+        const baseUrl = urlString.replace(/\/inicio\/?$/i, ''); // i = ignora mayúsculas
+        console.log('URL base:', baseUrl);
+
+        return baseUrl;
+
+    } catch (error) {
+        throw new Error('Error al encontrar url silog. ('+error+')');
+    }
+};
+module.exports = { getEmpresaSistema, getUrlSilog };

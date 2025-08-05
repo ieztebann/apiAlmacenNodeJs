@@ -18,7 +18,7 @@ const fillCredit = async (currentPerson,productData,objVehicle,InvoiceInformatio
             idFormaAplicaSeguro: 1,//porcentaje
             tarifaSeguro: 0,
             idPersona: currentPerson.id ? (currentPerson.id) : null, 
-            idConceptoComprobante: objVehicle && objVehicle.currentVehicle && objVehicle.currentVehicle.id ? (1052) : 1156,
+            idConceptoComprobante: objVehicle && objVehicle.currentVehicle && objVehicle.currentVehicle.id ? (process.env.ID_CPTO_CREDITO_ALMACEN_VEHICULO || 1052) : (process.env.ID_CPTO_CREDITO_ALMACEN_TERCERO || 1156),//2415,2416
             idEmpresaOperadora: id_empresa_operadora.idPersona ? (id_empresa_operadora.idPersona) : null,
             fecDesembolso: InvoiceInformation.InvoiceDate ? `${InvoiceInformation.InvoiceDate} 00:00:00` : null,
             fecPrimeraCuota: InvoiceInformation.InvoiceDate ? (InvoiceInformation.InvoiceDate) : null,

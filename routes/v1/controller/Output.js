@@ -157,8 +157,14 @@ const validateOutput = async (datosCredito) => {
  */
 const createOutput = async (outputData, idUsuario, dbDate, transaction) => {
     try {
+        const existente = await Output.findOne({ where: { inventoryOutputStateId:2 , nroCruce: String(outputData.nroCruce)} });
+        if (existente) {
+            throw new Error('Ya existe una factura con este nroCruce.');
+        }
         outputData.idUsuarioCre = idUsuario;
-        outputData.createdAt = dbDate;
+        //throw new Error(outputData);
+        //throw new Error( JSON.stringify(outputData));
+
         updatedPerson = await Output.create(outputData,{ transaction });
         return updatedPerson;
     } catch (error) {

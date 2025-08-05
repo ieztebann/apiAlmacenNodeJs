@@ -17,6 +17,7 @@ const ExternalVehicleModel = require('./ExternalVehicle');
 const EmpresaSistemaModel = require('./EmpresaSistema');
 const OutputModel = require('./Output');
 const OutputInventoryDetailModel = require('./OutputInventoryDetail');
+const PrincipalModulesModel = require('./PrincipalModules');
 
 
 const Product = ProductModel(sequelize, DataTypes);
@@ -35,6 +36,7 @@ const ExternalVehicle = ExternalVehicleModel(sequelize, DataTypes);
 const EmpresaSistema = EmpresaSistemaModel(sequelize, DataTypes);
 const Output = OutputModel(sequelize, DataTypes);
 const OutputInventoryDetail = OutputInventoryDetailModel(sequelize, DataTypes);
+const PrincipalModules = PrincipalModulesModel(sequelize, DataTypes);
 
 const db = {};
 db.Product = Product;
@@ -53,6 +55,7 @@ db.ExternalVehicle = ExternalVehicle;
 db.EmpresaSistema = EmpresaSistema;
 db.Output = Output;
 db.OutputInventoryDetail = OutputInventoryDetail;
+db.PrincipalModules = PrincipalModules;
 db.Sequelize = sequelize;
 
 module.exports = db;

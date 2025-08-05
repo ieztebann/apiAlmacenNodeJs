@@ -6,6 +6,7 @@ const VehicleController = require('./Vehicle');
 const PaymentController = require('./Payment');
 const CreditController = require('./Credit');
 const UtilController = require('./util');
+const EmpresaSistemaController = require('./EmpresaSistema');
 
 // Exportar todos los controladores en un solo objeto
 const controller = {};
@@ -16,5 +17,6 @@ controller.OutputController = OutputController;
 controller.PaymentController = PaymentController;
 controller.CreditController = CreditController;
 controller.UtilController = UtilController;
+controller.EmpresaSistemaController = EmpresaSistemaController;
 
 module.exports = controller;
